@@ -196,7 +196,7 @@ const LOCAL_SCHEDULE = [
     away_scorers: [],
     finished: false,
     time_elapsed: "notstarted",
-    local_date: "06/12/2026 18:00",
+    local_date: "06/12/2026 21:00",
     stadium_id: "16"
   },
   // June 13, 2026
