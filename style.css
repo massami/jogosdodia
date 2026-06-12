@@ -141,8 +141,8 @@ body {
 }
 
 .match-card.is-live {
-  border-color: rgba(22, 163, 74, 0.5);
-  box-shadow: 0 0 10px rgba(22, 163, 74, 0.1);
+  border-color: rgba(22, 163, 74, 0.7);
+  box-shadow: 0 0 10px rgba(22, 163, 74, 0.2);
   animation: live-card-pulse 2.5s ease-in-out infinite;
   position: relative;
   overflow: hidden;
@@ -153,7 +153,7 @@ body {
   position: absolute;
   inset: 0;
   border-radius: 12px;
-  border: 1.5px solid rgba(22, 163, 74, 0.6);
+  border: 2px solid rgba(22, 163, 74, 0.85);
   animation: live-border-glow 2.5s ease-in-out infinite;
   pointer-events: none;
 }
@@ -467,16 +467,16 @@ body {
 
 @keyframes live-card-pulse {
   0%, 100% {
-    box-shadow: 0 0 6px rgba(22, 163, 74, 0.15);
+    box-shadow: 0 0 8px rgba(22, 163, 74, 0.2);
     background-color: var(--panel-bg);
   }
   50% {
-    box-shadow: 0 0 16px rgba(22, 163, 74, 0.25);
-    background-color: rgba(22, 163, 74, 0.04);
+    box-shadow: 0 0 22px rgba(22, 163, 74, 0.45);
+    background-color: rgba(22, 163, 74, 0.08);
   }
 }
 
 @keyframes live-border-glow {
-  0%, 100% { opacity: 0.4; }
+  0%, 100% { opacity: 0.3; }
   50% { opacity: 1; }
 }
