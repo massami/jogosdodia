@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Copa do Mundo 2026 - Live Widget</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="widget-container">
+    <header class="widget-header">
+      <div class="header-main">
+        <div class="title-group">
+          <h1>FIFA 2026</h1>
+          <span class="live-pulse-badge" id="global-live-badge">• LIVE</span>
+        </div>
+        <div class="clock" id="live-clock">11:17:18</div>
+      </div>
+      <div class="date-bar" id="current-date">12 de Junho, 2026</div>
+    </header>
+
+    <main class="matches-list" id="matches-list">
+      <!-- Loading State -->
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Carregando jogos...</p>
+      </div>
+    </main>
+
+    <footer class="widget-footer">
+      <div class="control-panel">
+        <div class="toggle-container">
+          <label class="switch">
+            <input type="checkbox" id="sim-mode-toggle">
+            <span class="slider round"></span>
+          </label>
+          <span class="toggle-label">Modo Simulação</span>
+        </div>
+        <div class="info-text">Atualizando minuto a minuto</div>
+      </div>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
