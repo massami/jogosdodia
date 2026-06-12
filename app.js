@@ -9,6 +9,46 @@ let matches = [];
 let updateIntervalId = null;
 let clockIntervalId = null;
 
+// Official FIFA 3-letter country codes
+const TEAM_CODES = {
+  "Afghanistan": "AFG", "Albania": "ALB", "Algeria": "ALG", "Angola": "ANG",
+  "Argentina": "ARG", "Armenia": "ARM", "Australia": "AUS", "Austria": "AUT",
+  "Azerbaijan": "AZE", "Bahrain": "BHR", "Bangladesh": "BAN", "Belgium": "BEL",
+  "Benin": "BEN", "Bolivia": "BOL", "Bosnia and Herzegovina": "BIH",
+  "Botswana": "BOT", "Brazil": "BRA", "Bulgaria": "BUL", "Burkina Faso": "BFA",
+  "Cameroon": "CMR", "Canada": "CAN", "Chile": "CHI", "China": "CHN",
+  "Colombia": "COL", "Congo": "CGO", "Costa Rica": "CRC", "Croatia": "CRO",
+  "Cuba": "CUB", "Czechia": "CZE", "Czech Republic": "CZE", "Denmark": "DEN",
+  "Ecuador": "ECU", "Egypt": "EGY", "El Salvador": "SLV", "England": "ENG",
+  "Estonia": "EST", "Ethiopia": "ETH", "Finland": "FIN", "France": "FRA",
+  "Gabon": "GAB", "Germany": "GER", "Ghana": "GHA", "Greece": "GRE",
+  "Guatemala": "GUA", "Guinea": "GUI", "Haiti": "HAI", "Honduras": "HON",
+  "Hungary": "HUN", "Iceland": "ISL", "India": "IND", "Indonesia": "IDN",
+  "Iran": "IRN", "Iraq": "IRQ", "Ireland": "IRL", "Israel": "ISR",
+  "Italy": "ITA", "Ivory Coast": "CIV", "Jamaica": "JAM", "Japan": "JPN",
+  "Jordan": "JOR", "Kazakhstan": "KAZ", "Kenya": "KEN", "Korea Republic": "KOR",
+  "South Korea": "KOR", "Kuwait": "KUW", "Latvia": "LVA", "Lebanon": "LIB",
+  "Libya": "LBA", "Lithuania": "LTU", "Luxembourg": "LUX", "Malaysia": "MAS",
+  "Mali": "MLI", "Malta": "MLT", "Mexico": "MEX", "Moldova": "MDA",
+  "Morocco": "MAR", "Mozambique": "MOZ", "Namibia": "NAM", "Netherlands": "NED",
+  "New Zealand": "NZL", "Nicaragua": "NCA", "Nigeria": "NGA", "Norway": "NOR",
+  "Oman": "OMA", "Pakistan": "PAK", "Panama": "PAN", "Paraguay": "PAR",
+  "Peru": "PER", "Philippines": "PHI", "Poland": "POL", "Portugal": "POR",
+  "Qatar": "QAT", "Romania": "ROU", "Russia": "RUS", "Saudi Arabia": "KSA",
+  "Scotland": "SCO", "Senegal": "SEN", "Serbia": "SRB", "Slovakia": "SVK",
+  "Slovenia": "SVN", "South Africa": "RSA", "Spain": "ESP", "Sudan": "SDN",
+  "Sweden": "SWE", "Switzerland": "SUI", "Syria": "SYR", "Tanzania": "TAN",
+  "Thailand": "THA", "Togo": "TOG", "Trinidad and Tobago": "TRI",
+  "Tunisia": "TUN", "Turkey": "TUR", "Uganda": "UGA", "Ukraine": "UKR",
+  "United Arab Emirates": "UAE", "United States": "USA", "Uruguay": "URU",
+  "Uzbekistan": "UZB", "Venezuela": "VEN", "Vietnam": "VIE", "Wales": "WAL",
+  "Zambia": "ZAM", "Zimbabwe": "ZIM",
+};
+
+function getTeamCode(name) {
+  return TEAM_CODES[name] || name.slice(0, 3).toUpperCase();
+}
+
 // Team country code mapping for SVGs flags
 const FLAG_SVGS = {
   // --- CONCACAF ---
@@ -637,8 +677,8 @@ function renderMatches() {
     }
 
     if (match.finished) {
-      const homeAbbr = match.home_team_name_en.slice(0, 3).toUpperCase();
-      const awayAbbr = match.away_team_name_en.slice(0, 3).toUpperCase();
+      const homeAbbr = getTeamCode(match.home_team_name_en);
+      const awayAbbr = getTeamCode(match.away_team_name_en);
       const kickoffDate = new Date(match.kickoff_utc);
       const brTime = kickoffDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
       card.innerHTML = `
@@ -657,8 +697,8 @@ function renderMatches() {
         </div>
       `;
     } else if (!isLive) {
-      const homeAbbr = match.home_team_name_en.slice(0, 3).toUpperCase();
-      const awayAbbr = match.away_team_name_en.slice(0, 3).toUpperCase();
+      const homeAbbr = getTeamCode(match.home_team_name_en);
+      const awayAbbr = getTeamCode(match.away_team_name_en);
       card.innerHTML = `
         <div class="card-header">
           <span class="group-tag">Grupo ${match.group}</span>
