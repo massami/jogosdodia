@@ -118,7 +118,7 @@ const FLAG_SVGS = {
 const KICKOFF_UTC = {
   "Mexico|South Africa":              "2026-06-11T18:00:00Z", // 15:00 BRT
   "South Korea|Czechia":              "2026-06-12T01:00:00Z", // 22:00 BRT Jun 11
-  "Canada|Bosnia and Herzegovina":    "2026-06-12T20:00:00Z", // 17:00 BRT
+  "Canada|Bosnia and Herzegovina":    "2026-06-12T19:00:00Z", // 16:00 BRT
   "United States|Paraguay":           "2026-06-13T01:00:00Z", // 22:00 BRT
   "Haiti|Scotland":                   "2026-06-14T02:00:00Z", // 23:00 BRT Jun 13
   "Australia|Turkey":                 "2026-06-14T02:00:00Z", // 23:00 BRT Jun 13
