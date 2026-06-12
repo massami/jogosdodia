@@ -49,6 +49,22 @@ function getTeamCode(name) {
   return TEAM_CODES[name] || name.slice(0, 3).toUpperCase();
 }
 
+const PHASE_LABELS = {
+  "group": null,
+  "r32":   "Oitavas de Final",
+  "r16":   "Oitavas de Final",
+  "qf":    "Quartas de Final",
+  "sf":    "Semifinal",
+  "third": "3º Lugar",
+  "final": "Final",
+};
+
+function getPhaseLabel(type, group) {
+  const label = PHASE_LABELS[type];
+  if (label) return label;
+  return group ? `Grupo ${group}` : "Grupo";
+}
+
 // Team country code mapping for SVGs flags
 const FLAG_SVGS = {
   // --- CONCACAF ---
@@ -515,6 +531,7 @@ async function loadMatchData() {
           away_scorers: parseScorers(game.away_scorers),
           finished: game.finished === "TRUE" || game.time_elapsed === "finished",
           time_elapsed: game.time_elapsed,
+          type: game.type || "group",
           kickoff_utc: kickoffUTC,
           possession: 50,
           shotsHome: 0,
@@ -683,7 +700,7 @@ function renderMatches() {
       const brTime = kickoffDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
       card.innerHTML = `
         <div class="card-header">
-          <span class="group-tag">Grupo ${match.group}</span>
+          <span class="group-tag">${getPhaseLabel(match.type, match.group)}</span>
           <span class="status-badge ft">${brTime} · Fim</span>
         </div>
         <div class="card-compact">
@@ -701,7 +718,7 @@ function renderMatches() {
       const awayAbbr = getTeamCode(match.away_team_name_en);
       card.innerHTML = `
         <div class="card-header">
-          <span class="group-tag">Grupo ${match.group}</span>
+          <span class="group-tag">${getPhaseLabel(match.type, match.group)}</span>
           <span class="status-badge scheduled">${statusText}</span>
         </div>
         <div class="card-compact">
@@ -718,7 +735,7 @@ function renderMatches() {
     } else {
       card.innerHTML = `
         <div class="card-header">
-          <span class="group-tag">Grupo ${match.group}</span>
+          <span class="group-tag">${getPhaseLabel(match.type, match.group)}</span>
           <span class="status-badge ${statusClass}">${statusText}</span>
         </div>
         <div class="card-body">
