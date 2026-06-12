@@ -515,13 +515,17 @@ function renderMatches() {
 
   let anyLive = false;
 
+
   matches.forEach(match => {
     const isLive = match.time_elapsed !== "notstarted" && match.time_elapsed !== "finished" && !match.finished;
     if (isLive) anyLive = true;
 
     // Create Match Card element
     const card = document.createElement("div");
-    card.className = `match-card ${isLive ? 'is-live' : ''} ${expandedCardIds.has(match.id) ? 'is-expanded' : ''}`;
+    const isBrazilGame = match.home_team_name_en === "Brazil" || match.away_team_name_en === "Brazil";
+    const isJapanGame = match.home_team_name_en === "Japan" || match.away_team_name_en === "Japan";
+    const nationClass = isBrazilGame ? "card-brazil" : isJapanGame ? "card-japan" : "";
+    card.className = `match-card ${isLive ? 'is-live' : ''} ${expandedCardIds.has(match.id) ? 'is-expanded' : ''} ${nationClass}`;
     card.setAttribute("data-id", match.id);
 
     // Get Flag SVGs
@@ -635,9 +639,14 @@ function renderMatches() {
     if (match.finished) {
       const homeAbbr = match.home_team_name_en.slice(0, 3).toUpperCase();
       const awayAbbr = match.away_team_name_en.slice(0, 3).toUpperCase();
+      const kickoffDate = new Date(match.kickoff_utc);
+      const brTime = kickoffDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
       card.innerHTML = `
-        <div class="card-compact">
+        <div class="card-header">
           <span class="group-tag">Grupo ${match.group}</span>
+          <span class="status-badge ft">${brTime} · Fim</span>
+        </div>
+        <div class="card-compact">
           <div class="compact-row">
             ${homeFlag}
             <span class="compact-abbr">${homeAbbr}</span>
@@ -645,7 +654,6 @@ function renderMatches() {
             <span class="compact-abbr">${awayAbbr}</span>
             ${awayFlag}
           </div>
-          <span class="status-badge ft">Fim</span>
         </div>
       `;
     } else {

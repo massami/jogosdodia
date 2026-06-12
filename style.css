@@ -423,13 +423,59 @@ body {
   letter-spacing: 0.5px;
 }
 
+/* Brazil card theme */
+.match-card.card-brazil {
+  background: linear-gradient(135deg, rgba(0, 156, 59, 0.12) 0%, rgba(255, 223, 0, 0.1) 100%);
+  border-color: rgba(0, 156, 59, 0.4);
+}
+.match-card.card-brazil.is-live {
+  animation: live-card-pulse-brazil 2.5s ease-in-out infinite;
+  border-color: rgba(0, 156, 59, 0.7);
+}
+.match-card.card-brazil.is-live::before {
+  border-color: rgba(0, 156, 59, 0.85);
+}
+.match-card.card-brazil .card-header {
+  background: linear-gradient(90deg, rgba(0, 156, 59, 0.15), rgba(255, 223, 0, 0.12));
+  border-bottom-color: rgba(0, 156, 59, 0.15);
+}
+.match-card.card-brazil .group-tag {
+  background: rgba(0, 156, 59, 0.15);
+  color: #15803d;
+}
+.match-card.card-brazil .compact-score,
+.match-card.card-brazil .team-name {
+  color: #14532d;
+}
+
+/* Japan card theme */
+.match-card.card-japan {
+  background: linear-gradient(135deg, rgba(188, 0, 45, 0.08) 0%, rgba(255, 255, 255, 0.6) 100%);
+  border-color: rgba(188, 0, 45, 0.35);
+}
+.match-card.card-japan.is-live {
+  animation: live-card-pulse-japan 2.5s ease-in-out infinite;
+  border-color: rgba(188, 0, 45, 0.7);
+}
+.match-card.card-japan.is-live::before {
+  border-color: rgba(188, 0, 45, 0.85);
+}
+.match-card.card-japan .card-header {
+  background: linear-gradient(90deg, rgba(188, 0, 45, 0.1), rgba(255, 255, 255, 0.2));
+  border-bottom-color: rgba(188, 0, 45, 0.12);
+}
+.match-card.card-japan .group-tag {
+  background: rgba(188, 0, 45, 0.1);
+  color: #be002d;
+}
+.match-card.card-japan .compact-score,
+.match-card.card-japan .team-name {
+  color: #7f1d1d;
+}
+
 /* Compact finished match card */
 .card-compact {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 6px 10px;
-  gap: 6px;
+  padding: 8px 10px;
 }
 
 .compact-row {
@@ -505,6 +551,28 @@ body {
   50% {
     box-shadow: 0 0 22px rgba(22, 163, 74, 0.45);
     background-color: rgba(22, 163, 74, 0.08);
+  }
+}
+
+@keyframes live-card-pulse-brazil {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(0, 156, 59, 0.2);
+    background: linear-gradient(135deg, rgba(0, 156, 59, 0.12) 0%, rgba(255, 223, 0, 0.1) 100%);
+  }
+  50% {
+    box-shadow: 0 0 22px rgba(0, 156, 59, 0.45);
+    background: linear-gradient(135deg, rgba(0, 156, 59, 0.22) 0%, rgba(255, 223, 0, 0.18) 100%);
+  }
+}
+
+@keyframes live-card-pulse-japan {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(188, 0, 45, 0.2);
+    background: linear-gradient(135deg, rgba(188, 0, 45, 0.08) 0%, rgba(255, 255, 255, 0.6) 100%);
+  }
+  50% {
+    box-shadow: 0 0 22px rgba(188, 0, 45, 0.4);
+    background: linear-gradient(135deg, rgba(188, 0, 45, 0.18) 0%, rgba(255, 255, 255, 0.6) 100%);
   }
 }
 
