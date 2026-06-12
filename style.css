@@ -483,6 +483,31 @@ body {
   padding: 8px 10px;
 }
 
+.match-card.is-finished {
+  background: rgba(148, 163, 184, 0.12);
+  border-color: rgba(148, 163, 184, 0.3);
+}
+
+.match-card.is-finished .card-header {
+  background: rgba(148, 163, 184, 0.08);
+  border-bottom-color: rgba(148, 163, 184, 0.15);
+}
+
+.match-card.is-finished .group-tag {
+  background: rgba(148, 163, 184, 0.15);
+  color: #64748b;
+}
+
+.match-card.is-finished .compact-abbr {
+  color: #64748b;
+}
+
+.match-card.is-finished .compact-score {
+  font-size: 13px;
+  color: #0f172a;
+  letter-spacing: 1px;
+}
+
 .compact-row {
   display: flex;
   align-items: center;

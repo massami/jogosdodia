@@ -565,7 +565,7 @@ function renderMatches() {
     const isBrazilGame = match.home_team_name_en === "Brazil" || match.away_team_name_en === "Brazil";
     const isJapanGame = match.home_team_name_en === "Japan" || match.away_team_name_en === "Japan";
     const nationClass = isBrazilGame ? "card-brazil" : isJapanGame ? "card-japan" : "";
-    card.className = `match-card ${isLive ? 'is-live' : ''} ${expandedCardIds.has(match.id) ? 'is-expanded' : ''} ${nationClass}`;
+    card.className = `match-card ${isLive ? 'is-live' : ''} ${match.finished ? 'is-finished' : ''} ${expandedCardIds.has(match.id) ? 'is-expanded' : ''} ${nationClass}`;
     card.setAttribute("data-id", match.id);
 
     // Get Flag SVGs
