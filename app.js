@@ -422,97 +422,74 @@ async function loadMatchData() {
   const day = String(now.getDate()).padStart(2, '0');
   const todayStr = `${month}/${day}/${year}`;
 
-  let loadedMatches = [];
+  // Always start with LOCAL_SCHEDULE as the base for today's games
+  const localGames = LOCAL_SCHEDULE.filter(sched => sched.local_date.startsWith(todayStr));
+  let loadedMatches = localGames.map(sched => {
+    const kickoffUTC = resolveKickoffUtc(sched.home_team_name_en, sched.away_team_name_en, sched.local_date, sched.stadium_id);
+    return {
+      ...sched,
+      kickoff_utc: kickoffUTC,
+      possession: 50,
+      shotsHome: 0,
+      shotsAway: 0,
+      foulsHome: 0,
+      foulsAway: 0,
+      events: []
+    };
+  });
 
   try {
     const response = await fetch("https://worldcup26.ir/get/games");
     if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
-    
+
     const data = await response.json();
-    
+
     if (data && data.games) {
-      // Filter games that are played on the current local day
       const apiGames = data.games.filter(game => {
         return game.local_date && game.local_date.startsWith(todayStr);
       });
 
-      if (apiGames.length > 0) {
-        loadedMatches = apiGames.map(game => {
-          const homeName = game.home_team_name_en === "Korea Republic" ? "South Korea" : game.home_team_name_en;
-          const awayName = game.away_team_name_en;
-          const kickoffUTC = resolveKickoffUtc(homeName, awayName, game.local_date, game.stadium_id);
-          return {
-            id: game.id,
-            group: game.group,
-            home_team_name_en: homeName,
-            away_team_name_en: awayName,
-            home_score: parseInt(game.home_score) || 0,
-            away_score: parseInt(game.away_score) || 0,
-            home_scorers: parseScorers(game.home_scorers),
-            away_scorers: parseScorers(game.away_scorers),
-            finished: game.finished === "TRUE" || game.time_elapsed === "finished",
-            time_elapsed: game.time_elapsed,
-            kickoff_utc: kickoffUTC,
-            possession: 50,
-            shotsHome: game.finished === "TRUE" ? 12 : 0,
-            shotsAway: game.finished === "TRUE" ? 9 : 0,
-            foulsHome: game.finished === "TRUE" ? 8 : 0,
-            foulsAway: game.finished === "TRUE" ? 9 : 0,
-            events: []
-          };
-        });
-        
-        console.log(`Loaded ${loadedMatches.length} games for ${todayStr} from API`);
-      }
+      // Overlay API data on top of local schedule (API may omit finished games)
+      apiGames.forEach(game => {
+        const homeName = game.home_team_name_en === "Korea Republic" ? "South Korea" : game.home_team_name_en;
+        const awayName = game.away_team_name_en;
+        const kickoffUTC = resolveKickoffUtc(homeName, awayName, game.local_date, game.stadium_id);
+        const apiMatch = {
+          id: game.id,
+          group: game.group,
+          home_team_name_en: homeName,
+          away_team_name_en: awayName,
+          home_score: parseInt(game.home_score) || 0,
+          away_score: parseInt(game.away_score) || 0,
+          home_scorers: parseScorers(game.home_scorers),
+          away_scorers: parseScorers(game.away_scorers),
+          finished: game.finished === "TRUE" || game.time_elapsed === "finished",
+          time_elapsed: game.time_elapsed,
+          kickoff_utc: kickoffUTC,
+          possession: 50,
+          shotsHome: 0,
+          shotsAway: 0,
+          foulsHome: 0,
+          foulsAway: 0,
+          events: []
+        };
+        const idx = loadedMatches.findIndex(m => m.id === game.id);
+        if (idx !== -1) {
+          loadedMatches[idx] = apiMatch;
+        } else {
+          loadedMatches.push(apiMatch);
+        }
+      });
+
+      console.log(`Merged ${apiGames.length} API games with ${localGames.length} local games for ${todayStr}`);
     }
   } catch (error) {
     console.warn("Live API fetch failed. Using pre-configured schedule fallback.", error);
   }
 
-  // Fallback if API returned no matches or failed
   if (loadedMatches.length === 0) {
-    // 1. Try to find matches in our local schedule
-    const localGames = LOCAL_SCHEDULE.filter(sched => sched.local_date.startsWith(todayStr));
-    
-    if (localGames.length > 0) {
-      loadedMatches = localGames.map(sched => {
-        const kickoffUTC = resolveKickoffUtc(sched.home_team_name_en, sched.away_team_name_en, sched.local_date, sched.stadium_id);
-        const kickoff = new Date(kickoffUTC);
-        let time_elapsed = sched.time_elapsed;
-        let finished = sched.finished;
-        let home_score = sched.home_score;
-        let away_score = sched.away_score;
-        let home_scorers = [...sched.home_scorers];
-        let away_scorers = [...sched.away_scorers];
-        let events = [];
-
-        return {
-          ...sched,
-          home_score,
-          away_score,
-          home_scorers,
-          away_scorers,
-          finished,
-          time_elapsed,
-          kickoff_utc: kickoffUTC,
-          possession: 50,
-          shotsHome: finished ? 12 : (time_elapsed !== "notstarted" ? 4 : 0),
-          shotsAway: finished ? 10 : (time_elapsed !== "notstarted" ? 3 : 0),
-          foulsHome: finished ? 8 : (time_elapsed !== "notstarted" ? 2 : 0),
-          foulsAway: finished ? 9 : (time_elapsed !== "notstarted" ? 3 : 0),
-          events: events.length > 0 ? events : (sched.id === "2" ? [
-            { time: "80'", desc: "Gol! Oh Hyeon-gyu coloca a Coreia na frente!" },
-            { time: "67'", desc: "Gol! Hwang In-beom empata a partida!" },
-            { time: "59'", desc: "Gol! Ladislav Krejčí abre o placar para a Czechia!" }
-          ] : [])
-        };
-      });
-      console.log(`Loaded ${loadedMatches.length} games for ${todayStr} from Local Schedule`);
-    } else {
-      // 2. Generate random mock games for demo purposes if outside fallback dates
-      loadedMatches = generateMockGamesForDate(todayStr, now);
-      console.log(`Generated ${loadedMatches.length} mock demo games for ${todayStr}`);
-    }
+    loadedMatches = generateMockGamesForDate(todayStr, now);
+    console.log(`Generated ${loadedMatches.length} mock demo games for ${todayStr}`);
   }
 
   matches = loadedMatches;
