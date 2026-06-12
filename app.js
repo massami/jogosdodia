@@ -351,8 +351,18 @@ document.addEventListener("DOMContentLoaded", () => {
   initClock();
   loadMatchData();
 
+  let lastLoadedDate = new Date().toDateString();
+
   // Setup periodic refresh (every 60 seconds)
-  updateIntervalId = setInterval(loadMatchData, 60000);
+  updateIntervalId = setInterval(() => {
+    const currentDate = new Date().toDateString();
+    if (currentDate !== lastLoadedDate) {
+      lastLoadedDate = currentDate;
+      location.reload();
+    } else {
+      loadMatchData();
+    }
+  }, 60000);
 });
 
 /**
