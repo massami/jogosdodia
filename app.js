@@ -348,6 +348,11 @@ let expandedCardIds = new Set();
  * Initialize widget and event listeners
  */
 document.addEventListener("DOMContentLoaded", () => {
+  const isLocal = location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.protocol === "file:";
+  if (!isLocal) {
+    document.getElementById("sim-toggle-wrapper").style.display = "none";
+  }
+
   initClock();
   setupEventListeners();
   loadMatchData();
