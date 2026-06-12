@@ -1,32 +1,13 @@
 /**
  * FIFA World Cup 2026 Live Matches Widget Engine
  * Handles real-time system clock, live API fetching, local schedule fallback,
- * responsive rendering, and interactive live game simulation.
+ * responsive rendering and match card interactions.
  */
 
 // Global Match State
 let matches = [];
-let isSimulationMode = false;
 let updateIntervalId = null;
 let clockIntervalId = null;
-let simulationState = {
-  activeGameId: "3", // Canada vs Bosnia & Herzegovina
-  timeElapsed: 70, // Start simulation at 70'
-  homeScore: 1,
-  awayScore: 1,
-  homeScorers: ["L. Millar 34'"],
-  awayScorers: ["E. Džeko 42'"],
-  possession: 52,
-  shotsHome: 9,
-  shotsAway: 7,
-  foulsHome: 6,
-  foulsAway: 8,
-  events: [
-    { time: "42'", desc: "Gol! Edin Džeko empata para a Bósnia com assistência de Krunić!" },
-    { time: "34'", desc: "Gol! Liam Millar abre o placar para o Canadá após cruzamento de Davies!" },
-    { time: "12'", desc: "Cartão Amarelo: Amar Dedić (Bósnia) por falta dura." }
-  ]
-};
 
 // Team country code mapping for SVGs flags
 const FLAG_SVGS = {
@@ -367,13 +348,7 @@ let expandedCardIds = new Set();
  * Initialize widget and event listeners
  */
 document.addEventListener("DOMContentLoaded", () => {
-  const isLocal = location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.protocol === "file:";
-  if (!isLocal) {
-    document.getElementById("sim-toggle-wrapper").style.display = "none";
-  }
-
   initClock();
-  setupEventListeners();
   loadMatchData();
 
   // Setup periodic refresh (every 60 seconds)
@@ -400,33 +375,11 @@ function initClock() {
     // Update date header dynamically
     dateEl.innerText = now.toLocaleDateString('pt-BR', dateOptions);
 
-    // Ticking the countdowns dynamically every second
-    if (!isSimulationMode) {
-      updateCountdowns();
-    }
+    updateCountdowns();
   }
 
   tick();
   clockIntervalId = setInterval(tick, 1000);
-}
-
-/**
- * Register controls event listeners
- */
-function setupEventListeners() {
-  const simToggle = document.getElementById("sim-mode-toggle");
-  
-  simToggle.addEventListener("change", (e) => {
-    isSimulationMode = e.target.checked;
-    
-    if (isSimulationMode) {
-      // Start Simulation Engine loop
-      startSimulation();
-    } else {
-      // Revert to Real-time API
-      stopSimulation();
-    }
-  });
 }
 
 /**
@@ -462,8 +415,6 @@ function parseScorers(scorersVal) {
  * Fetch World Cup Match Data from API with local fallback
  */
 async function loadMatchData() {
-  if (isSimulationMode) return; // Keep simulation values intact during simulation
-
   // Get current system date in MM/DD/YYYY format
   const now = new Date();
   const year = now.getFullYear();
@@ -535,8 +486,7 @@ async function loadMatchData() {
         let away_scorers = [...sched.away_scorers];
         let events = [];
 
-        // Simulate match happening in real-time fallback if system clock overlaps kickoff
-        const diffMs = now - kickoff;
+const diffMs = now - kickoff;
         const diffMinutes = Math.floor(diffMs / 60000);
 
         if (diffMinutes >= 0 && diffMinutes < 105) {
@@ -774,10 +724,7 @@ function renderMatches() {
   const globalBadge = document.getElementById("global-live-badge");
   globalBadge.style.display = anyLive ? "inline-block" : "none";
 
-  // Force tick once immediately to display countdown timers
-  if (!isSimulationMode) {
-    updateCountdowns();
-  }
+  updateCountdowns();
 }
 
 /**
@@ -815,131 +762,3 @@ function updateCountdowns() {
   });
 }
 
-/**
- * Start Live Game Simulation Mode
- */
-let simulationIntervalId = null;
-
-function startSimulation() {
-  // Override matches with simulation mock match
-  console.log("Starting match simulation mode");
-  
-  // Set current simulation states
-  simulationState = {
-    activeGameId: "3", // Canada vs Bosnia & Herzegovina
-    timeElapsed: 70, // starts at 70'
-    homeScore: 1,
-    awayScore: 1,
-    homeScorers: ["L. Millar 34'"],
-    awayScorers: ["E. Džeko 42'"],
-    possession: 52,
-    shotsHome: 9,
-    shotsAway: 7,
-    foulsHome: 6,
-    foulsAway: 8,
-    events: [
-      { time: "42'", desc: "Gol! Edin Džeko empata para a Bósnia com assistência de Krunić!" },
-      { time: "34'", desc: "Gol! Liam Millar abre o placar para o Canadá após cruzamento de Davies!" },
-      { time: "12'", desc: "Cartão Amarelo: Amar Dedić (Bósnia) por falta dura." }
-    ]
-  };
-
-  runSimulationStep();
-  
-  // Run simulation clock: tick game minute every 5 seconds (quick updates)
-  simulationIntervalId = setInterval(() => {
-    simulationState.timeElapsed += 1;
-    
-    // Simulate events occurring in the match
-    let newEvent = null;
-    
-    if (simulationState.timeElapsed === 74) {
-      simulationState.shotsHome += 1;
-      newEvent = { time: "74'", desc: "Defesaça! Džeko cabeceia forte e St. Clair espalma para escanteio." };
-    } else if (simulationState.timeElapsed === 78) {
-      simulationState.homeScore += 1;
-      simulationState.homeScorers.push("J. David 78'");
-      simulationState.shotsHome += 1;
-      newEvent = { time: "78'", desc: "Gol! Jonathan David finaliza de primeira no canto após passe de Eustáquio! Canadá na frente!" };
-    } else if (simulationState.timeElapsed === 82) {
-      simulationState.foulsAway += 1;
-      newEvent = { time: "82'", desc: "Cartão Vermelho! Amar Dedić (Bósnia) recebe o segundo amarelo e é expulso!" };
-    } else if (simulationState.timeElapsed === 86) {
-      simulationState.possession = 57; // Canada controls ball with numerical advantage
-      simulationState.shotsHome += 2;
-      newEvent = { time: "86'", desc: "Pressão Canadense! Tajon Buchanan carimba o travessão em chute de fora da área!" };
-    } else if (simulationState.timeElapsed === 90) {
-      newEvent = { time: "90'", desc: "+4 minutos de acréscimo." };
-    } else if (simulationState.timeElapsed >= 94) {
-      simulationState.timeElapsed = 94; // Cap game time
-      newEvent = { time: "FT", desc: "Apito Final! Fim de jogo em Toronto. Canadá 2, Bósnia & Herzegovina 1." };
-      clearInterval(simulationIntervalId);
-    }
-    
-    // Adjust possession slightly
-    if (simulationState.timeElapsed < 94) {
-      simulationState.possession += Math.floor(Math.random() * 3) - 1;
-      simulationState.possession = Math.max(40, Math.min(60, simulationState.possession));
-    }
-
-    if (newEvent) {
-      simulationState.events.unshift(newEvent);
-    }
-
-    runSimulationStep();
-  }, 5000);
-}
-
-/**
- * Execute simulation step and update match arrays
- */
-function runSimulationStep() {
-  matches = LOCAL_SCHEDULE.map(sched => {
-    if (sched.id === simulationState.activeGameId) {
-      const isFinished = simulationState.timeElapsed === 94;
-      return {
-        ...sched,
-        home_score: simulationState.homeScore,
-        away_score: simulationState.awayScore,
-        home_scorers: [...simulationState.homeScorers],
-        away_scorers: [...simulationState.awayScorers],
-        finished: isFinished,
-        time_elapsed: isFinished ? "finished" : `${simulationState.timeElapsed}'`,
-        possession: simulationState.possession,
-        shotsHome: simulationState.shotsHome,
-        shotsAway: simulationState.shotsAway,
-        foulsHome: simulationState.foulsHome,
-        foulsAway: simulationState.foulsAway,
-        events: [...simulationState.events]
-      };
-    }
-    return {
-      ...sched,
-      // Keep other games fixed
-      possession: 50,
-      shotsHome: sched.id === "2" ? 11 : 0,
-      shotsAway: sched.id === "2" ? 8 : 0,
-      foulsHome: sched.id === "2" ? 9 : 0,
-      foulsAway: sched.id === "2" ? 10 : 0,
-      events: sched.id === "2" ? [
-        { time: "80'", desc: "Gol! Oh Hyeon-gyu coloca a Coreia na frente!" },
-        { time: "67'", desc: "Gol! Hwang In-beom empata a partida!" },
-        { time: "59'", desc: "Gol! Ladislav Krejčí abre o placar para a Czechia!" }
-      ] : []
-    };
-  });
-
-  renderMatches();
-}
-
-/**
- * Stop live simulation and revert to real date/API updates
- */
-function stopSimulation() {
-  console.log("Stopping match simulation mode");
-  if (simulationIntervalId) {
-    clearInterval(simulationIntervalId);
-    simulationIntervalId = null;
-  }
-  loadMatchData();
-}
