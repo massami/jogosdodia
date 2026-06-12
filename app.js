@@ -38,11 +38,62 @@ const FLAG_SVGS = {
   "Canada": `<svg class="flag-icon" viewBox="0 0 2 1"><rect width="2" height="1" fill="#FF0000"/><rect x="0.5" width="1" height="1" fill="#FFFFFF"/><path d="M 1 0.22 L 1.04 0.42 L 1.25 0.38 L 1.15 0.52 L 1.35 0.62 L 1.1 0.68 L 1.02 0.83 L 1 0.88 L 0.98 0.83 L 0.9 0.68 L 0.65 0.62 L 0.85 0.52 L 0.75 0.38 L 0.96 0.42 Z" fill="#FF0000"/></svg>`,
   "Bosnia and Herzegovina": `<svg class="flag-icon" viewBox="0 0 2 1"><rect width="2" height="1" fill="#002F6C"/><polygon points="0.5,0 1.5,0 1.5,1" fill="#FECB00"/><circle cx="0.55" cy="0.95" r="0.035" fill="white"/><circle cx="0.65" cy="0.8" r="0.035" fill="white"/><circle cx="0.75" cy="0.65" r="0.035" fill="white"/><circle cx="0.85" cy="0.5" r="0.035" fill="white"/><circle cx="0.95" cy="0.35" r="0.035" fill="white"/><circle cx="1.05" cy="0.2" r="0.035" fill="white"/><circle cx="1.15" cy="0.05" r="0.035" fill="white"/></svg>`,
   "United States": `<svg class="flag-icon" viewBox="0 0 19 10"><rect width="19" height="10" fill="#B22234"/><rect y="0.77" width="19" height="0.77" fill="#FFFFFF"/><rect y="2.3" width="19" height="0.77" fill="#FFFFFF"/><rect y="3.85" width="19" height="0.77" fill="#FFFFFF"/><rect y="5.38" width="19" height="0.77" fill="#FFFFFF"/><rect y="6.92" width="19" height="0.77" fill="#FFFFFF"/><rect y="8.46" width="19" height="0.77" fill="#FFFFFF"/><rect width="7.6" height="5.38" fill="#3C3B6E"/><circle cx="1.2" cy="0.9" r="0.15" fill="#FFFFFF"/><circle cx="2.5" cy="0.9" r="0.15" fill="#FFFFFF"/><circle cx="3.8" cy="0.9" r="0.15" fill="#FFFFFF"/><circle cx="5.1" cy="0.9" r="0.15" fill="#FFFFFF"/><circle cx="6.4" cy="0.9" r="0.15" fill="#FFFFFF"/><circle cx="1.8" cy="1.8" r="0.15" fill="#FFFFFF"/><circle cx="3.1" cy="1.8" r="0.15" fill="#FFFFFF"/><circle cx="4.4" cy="1.8" r="0.15" fill="#FFFFFF"/><circle cx="5.7" cy="1.8" r="0.15" fill="#FFFFFF"/><circle cx="1.2" cy="2.7" r="0.15" fill="#FFFFFF"/><circle cx="2.5" cy="2.7" r="0.15" fill="#FFFFFF"/><circle cx="3.8" cy="2.7" r="0.15" fill="#FFFFFF"/><circle cx="5.1" cy="2.7" r="0.15" fill="#FFFFFF"/><circle cx="6.4" cy="2.7" r="0.15" fill="#FFFFFF"/><circle cx="1.8" cy="3.6" r="0.15" fill="#FFFFFF"/><circle cx="3.1" cy="3.6" r="0.15" fill="#FFFFFF"/><circle cx="4.4" cy="3.6" r="0.15" fill="#FFFFFF"/><circle cx="5.7" cy="3.6" r="0.15" fill="#FFFFFF"/><circle cx="1.2" cy="4.5" r="0.15" fill="#FFFFFF"/><circle cx="2.5" cy="4.5" r="0.15" fill="#FFFFFF"/><circle cx="3.8" cy="4.5" r="0.15" fill="#FFFFFF"/><circle cx="5.1" cy="4.5" r="0.15" fill="#FFFFFF"/><circle cx="6.4" cy="4.5" r="0.15" fill="#FFFFFF"/></svg>`,
-  "Paraguay": `<svg class="flag-icon" viewBox="0 0 3 2"><rect width="3" height="0.67" fill="#D1121A"/><rect y="0.67" width="3" height="0.67" fill="#FFFFFF"/><rect y="1.33" width="3" height="0.67" fill="#0038A8"/><circle cx="1.5" cy="1" r="0.18" fill="#FFFFFF" stroke="#0038A8" stroke-width="0.02"/><circle cx="1.5" cy="1" r="0.08" fill="#FECB00"/></svg>`
+  "Paraguay": `<svg class="flag-icon" viewBox="0 0 3 2"><rect width="3" height="0.67" fill="#D1121A"/><rect y="0.67" width="3" height="0.67" fill="#FFFFFF"/><rect y="1.33" width="3" height="0.67" fill="#0038A8"/><circle cx="1.5" cy="1" r="0.18" fill="#FFFFFF" stroke="#0038A8" stroke-width="0.02"/><circle cx="1.5" cy="1" r="0.08" fill="#FECB00"/></svg>`,
+  "Germany": `<svg class="flag-icon" viewBox="0 0 5 3"><rect width="5" height="1" fill="#000000"/><rect y="1" width="5" height="1" fill="#DD0000"/><rect y="2" width="5" height="1" fill="#FFCC00"/></svg>`,
+  "Japan": `<svg class="flag-icon" viewBox="0 0 3 2"><rect width="3" height="2" fill="#FFFFFF"/><circle cx="1.5" cy="1" r="0.6" fill="#BC002D"/></svg>`,
+  "Turkey": `<svg class="flag-icon" viewBox="0 0 3 2"><rect width="3" height="2" fill="#E30A17"/><circle cx="1.1" cy="1" r="0.45" fill="#FFFFFF"/><circle cx="1.25" cy="1" r="0.36" fill="#E30A17"/><polygon points="1.75,0.85 1.75,1.15 1.55,1" fill="#FFFFFF"/></svg>`,
+  "Scotland": `<svg class="flag-icon" viewBox="0 0 5 3"><rect width="5" height="3" fill="#0065BF"/><polygon points="0,0 5,3 5,0 0,3" fill="none" stroke="#FFFFFF" stroke-width="0.5"/></svg>`,
+  "Brazil": `<svg class="flag-icon" viewBox="0 0 10 7"><rect width="10" height="7" fill="#009739"/><polygon points="5,0.7 9.3,3.5 5,6.3 0.7,3.5" fill="#FEDF00"/><circle cx="5" cy="3.5" r="1.5" fill="#002776"/><rect x="3.5" y="3.4" width="3" height="0.2" fill="#FFFFFF" transform="rotate(-10, 5, 3.5)"/></svg>`,
+  "Morocco": `<svg class="flag-icon" viewBox="0 0 3 2"><rect width="3" height="2" fill="#C1272D"/><polygon points="1.5,0.7 1.62,1.1 1.28,0.85 1.72,0.85 1.38,1.1" fill="none" stroke="#006233" stroke-width="0.05"/></svg>`,
+  "Qatar": `<svg class="flag-icon" viewBox="0 0 11 5"><rect width="11" height="5" fill="#8A1538"/><polygon points="0,0 2.5,0 3,0.28 2.5,0.56 3,0.83 2.5,1.11 3,1.39 2.5,1.67 3,1.94 2.5,2.22 3,2.5 2.5,2.78 3,3.06 2.5,3.33 3,3.61 2.5,3.89 3,4.17 2.5,4.44 3,4.72 2.5,5 0,5" fill="#FFFFFF"/></svg>`,
+  "Switzerland": `<svg class="flag-icon" viewBox="0 0 1 1"><rect width="1" height="1" fill="#D52B1E"/><rect x="0.4" y="0.2" width="0.2" height="0.6" fill="#FFFFFF"/><rect x="0.2" y="0.4" width="0.6" height="0.2" fill="#FFFFFF"/></svg>`,
+  "Haiti": `<svg class="flag-icon" viewBox="0 0 3 2"><rect width="3" height="1" fill="#00209F"/><rect y="1" width="3" height="1" fill="#D21034"/><rect x="1.2" y="0.75" width="0.6" height="0.5" fill="#FFFFFF"/><circle cx="1.5" cy="1" r="0.1" fill="#007A3D"/></svg>`,
+  "Australia": `<svg class="flag-icon" viewBox="0 0 2 1"><rect width="2" height="1" fill="#00008B"/><circle cx="0.5" cy="0.75" r="0.1" fill="#FFFFFF"/><circle cx="1.5" cy="0.3" r="0.03" fill="#FFFFFF"/><circle cx="1.3" cy="0.45" r="0.03" fill="#FFFFFF"/><circle cx="1.7" cy="0.55" r="0.03" fill="#FFFFFF"/><circle cx="1.5" cy="0.7" r="0.03" fill="#FFFFFF"/><circle cx="1.6" cy="0.85" r="0.02" fill="#FFFFFF"/></svg>`
 };
 
-// Pre-configured matches schedule (June 12, 2026) as fallback / starting state
+// Helper to compute UTC kickoff time from venue local time and stadium ID
+function getKickoffUtc(localDateStr, stadiumId) {
+  const parts = localDateStr.split(" ");
+  const dateParts = parts[0].split("/");
+  const timeParts = parts[1].split(":");
+  
+  const month = parseInt(dateParts[0]) - 1;
+  const day = parseInt(dateParts[1]);
+  const year = parseInt(dateParts[2]);
+  const hours = parseInt(timeParts[0]);
+  const minutes = parseInt(timeParts[1]);
+  
+  // Timezone offsets for stadium IDs (CDT vs PDT vs EDT in summer DST)
+  let offset = -4; // Default to EDT (UTC-4)
+  const sId = String(stadiumId);
+  
+  if (["1", "2", "3", "8", "9", "10"].includes(sId)) {
+    offset = -5; // CDT (UTC-5)
+  } else if (["4", "5", "6", "7"].includes(sId)) {
+    offset = -7; // PDT (UTC-7)
+  }
+  
+  const utcTimeMs = Date.UTC(year, month, day, hours - offset, minutes);
+  return new Date(utcTimeMs).toISOString();
+}
+
+// Pre-configured matches schedule (fallback / starting state)
 const LOCAL_SCHEDULE = [
+  // June 11, 2026
+  {
+    id: "1",
+    group: "A",
+    home_team_name_en: "Mexico",
+    away_team_name_en: "South Africa",
+    home_score: 2,
+    away_score: 0,
+    home_scorers: ["J. Quiñones 9'", "R. Jiménez 67'"],
+    away_scorers: [],
+    finished: true,
+    time_elapsed: "finished",
+    local_date: "06/11/2026 13:00",
+    stadium_id: "1"
+  },
   {
     id: "2",
     group: "A",
@@ -54,8 +105,10 @@ const LOCAL_SCHEDULE = [
     away_scorers: ["L. Krejčí 59'"],
     finished: true,
     time_elapsed: "finished",
-    kickoff_utc: "2026-06-12T02:00:00Z" // Played early June 12 UTC
+    local_date: "06/11/2026 20:00",
+    stadium_id: "2"
   },
+  // June 12, 2026
   {
     id: "3",
     group: "B",
@@ -67,7 +120,8 @@ const LOCAL_SCHEDULE = [
     away_scorers: [],
     finished: false,
     time_elapsed: "notstarted",
-    kickoff_utc: "2026-06-12T19:00:00Z" // 15:00 Toronto / 16:00 User time
+    local_date: "06/12/2026 15:00",
+    stadium_id: "12"
   },
   {
     id: "4",
@@ -80,9 +134,150 @@ const LOCAL_SCHEDULE = [
     away_scorers: [],
     finished: false,
     time_elapsed: "notstarted",
-    kickoff_utc: "2026-06-13T01:00:00Z" // 18:00 LA (June 12) / 22:00 User time (June 12)
+    local_date: "06/12/2026 18:00",
+    stadium_id: "16"
+  },
+  // June 13, 2026
+  {
+    id: "5",
+    group: "C",
+    home_team_name_en: "Haiti",
+    away_team_name_en: "Scotland",
+    home_score: 0,
+    away_score: 0,
+    home_scorers: [],
+    away_scorers: [],
+    finished: false,
+    time_elapsed: "notstarted",
+    local_date: "06/13/2026 21:00",
+    stadium_id: "9"
+  },
+  {
+    id: "6",
+    group: "D",
+    home_team_name_en: "Australia",
+    away_team_name_en: "Turkey",
+    home_score: 0,
+    away_score: 0,
+    home_scorers: [],
+    away_scorers: [],
+    finished: false,
+    time_elapsed: "notstarted",
+    local_date: "06/13/2026 21:00",
+    stadium_id: "13"
+  },
+  {
+    id: "7",
+    group: "C",
+    home_team_name_en: "Brazil",
+    away_team_name_en: "Morocco",
+    home_score: 0,
+    away_score: 0,
+    home_scorers: [],
+    away_scorers: [],
+    finished: false,
+    time_elapsed: "notstarted",
+    local_date: "06/13/2026 18:00",
+    stadium_id: "11"
+  },
+  {
+    id: "8",
+    group: "B",
+    home_team_name_en: "Qatar",
+    away_team_name_en: "Switzerland",
+    home_score: 0,
+    away_score: 0,
+    home_scorers: [],
+    away_scorers: [],
+    finished: false,
+    time_elapsed: "notstarted",
+    local_date: "06/13/2026 12:00",
+    stadium_id: "15"
   }
 ];
+
+// Generate realistic mock games if API is offline and we have no pre-configured schedule for the day
+function generateMockGamesForDate(todayStr, now) {
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const day = now.getDate();
+  
+  const kickoff1 = new Date(year, month, day, 16, 0, 0);
+  const kickoff2 = new Date(year, month, day, 22, 0, 0);
+  
+  const games = [
+    {
+      id: "mock-1",
+      group: "E",
+      home_team_name_en: "Germany",
+      away_team_name_en: "Japan",
+      home_score: 0,
+      away_score: 0,
+      home_scorers: [],
+      away_scorers: [],
+      finished: false,
+      time_elapsed: "notstarted",
+      kickoff_utc: kickoff1.toISOString(),
+      possession: 50,
+      shotsHome: 0,
+      shotsAway: 0,
+      foulsHome: 0,
+      foulsAway: 0,
+      events: []
+    },
+    {
+      id: "mock-2",
+      group: "F",
+      home_team_name_en: "Sweden",
+      away_team_name_en: "Paraguay",
+      home_score: 0,
+      away_score: 0,
+      home_scorers: [],
+      away_scorers: [],
+      finished: false,
+      time_elapsed: "notstarted",
+      kickoff_utc: kickoff2.toISOString(),
+      possession: 50,
+      shotsHome: 0,
+      shotsAway: 0,
+      foulsHome: 0,
+      foulsAway: 0,
+      events: []
+    }
+  ];
+
+  games.forEach(g => {
+    const kickoff = new Date(g.kickoff_utc);
+    const diffMs = now - kickoff;
+    const diffMinutes = Math.floor(diffMs / 60000);
+
+    if (diffMinutes >= 0 && diffMinutes < 105) {
+      g.finished = false;
+      g.time_elapsed = diffMinutes > 45 ? `${Math.min(diffMinutes - 15, 90)}'` : `${diffMinutes}'`;
+      if (diffMinutes > 45 && diffMinutes <= 60) g.time_elapsed = "HT";
+      g.possession = 54;
+      g.shotsHome = Math.floor(diffMinutes / 10);
+      g.shotsAway = Math.floor(diffMinutes / 12);
+    } else if (diffMinutes >= 105) {
+      g.finished = true;
+      g.time_elapsed = "finished";
+      g.home_score = 2;
+      g.away_score = 1;
+      g.home_scorers = ["Scorer A 12'", "Scorer B 76'"];
+      g.away_scorers = ["Scorer C 44'"];
+      g.possession = 52;
+      g.shotsHome = 14;
+      g.shotsAway = 9;
+      g.events = [
+        { time: "76'", desc: "Gol! Alemanha desempata!" },
+        { time: "44'", desc: "Gol! Japão empata a partida!" },
+        { time: "12'", desc: "Gol! Alemanha abre o placar!" }
+      ];
+    }
+  });
+
+  return games;
+}
 
 // Map of expanded card IDs to keep track across re-renders
 let expandedCardIds = new Set();
@@ -108,8 +303,6 @@ function initClock() {
 
   // Format header date
   const dateOptions = { day: 'numeric', month: 'long', year: 'numeric' };
-  // Fixed simulated date for the World Cup day: June 12, 2026
-  dateEl.innerText = "12 de Junho, 2026";
 
   function tick() {
     const now = new Date();
@@ -117,6 +310,9 @@ function initClock() {
     let minutes = String(now.getMinutes()).padStart(2, '0');
     let seconds = String(now.getSeconds()).padStart(2, '0');
     clockEl.innerText = `${hours}:${minutes}:${seconds}`;
+
+    // Update date header dynamically
+    dateEl.innerText = now.toLocaleDateString('pt-BR', dateOptions);
 
     // Ticking the countdowns dynamically every second
     if (!isSimulationMode) {
@@ -182,6 +378,15 @@ function parseScorers(scorersVal) {
 async function loadMatchData() {
   if (isSimulationMode) return; // Keep simulation values intact during simulation
 
+  // Get current system date in MM/DD/YYYY format
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const todayStr = `${month}/${day}/${year}`;
+
+  let loadedMatches = [];
+
   try {
     const response = await fetch("https://worldcup26.ir/get/games");
     if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
@@ -189,23 +394,19 @@ async function loadMatchData() {
     const data = await response.json();
     
     if (data && data.games) {
-      // Filter games that are played on June 12, 2026 (local or UTC context)
-      // Standardize games list
+      // Filter games that are played on the current local day
       const apiGames = data.games.filter(game => {
-        // We match: Korea vs Czechia (id 2), Canada vs Bosnia (id 3), USA vs Paraguay (id 4)
-        return game.id === "2" || game.id === "3" || game.id === "4";
+        return game.local_date && game.local_date.startsWith(todayStr);
       });
 
       if (apiGames.length > 0) {
-        // Map API objects to unified structure
-        matches = apiGames.map(game => {
-          let kickoffUTC = LOCAL_SCHEDULE.find(s => s.id === game.id)?.kickoff_utc;
-          
+        loadedMatches = apiGames.map(game => {
+          const kickoffUTC = getKickoffUtc(game.local_date, game.stadium_id);
           return {
             id: game.id,
             group: game.group,
             home_team_name_en: game.home_team_name_en === "Korea Republic" ? "South Korea" : game.home_team_name_en,
-            away_team_name_en: game.away_team_name_en,
+            away_team_name_en: game.away_team_name_en === "Turkey" ? "Turkey" : game.away_team_name_en,
             home_score: parseInt(game.home_score) || 0,
             away_score: parseInt(game.away_score) || 0,
             home_scorers: parseScorers(game.home_scorers),
@@ -213,96 +414,100 @@ async function loadMatchData() {
             finished: game.finished === "TRUE" || game.time_elapsed === "finished",
             time_elapsed: game.time_elapsed,
             kickoff_utc: kickoffUTC,
-            // Provide baseline stats for API matches
             possession: 50,
-            shotsHome: game.id === "2" ? 11 : 0,
-            shotsAway: game.id === "2" ? 8 : 0,
-            foulsHome: game.id === "2" ? 9 : 0,
-            foulsAway: game.id === "2" ? 10 : 0,
-            events: game.id === "2" ? [
-              { time: "80'", desc: "Gol! Oh Hyeon-gyu coloca a Coreia na frente!" },
-              { time: "67'", desc: "Gol! Hwang In-beom empata a partida!" },
-              { time: "59'", desc: "Gol! Ladislav Krejčí abre o placar para a Czechia!" }
-            ] : []
+            shotsHome: game.finished === "TRUE" ? 12 : 0,
+            shotsAway: game.finished === "TRUE" ? 9 : 0,
+            foulsHome: game.finished === "TRUE" ? 8 : 0,
+            foulsAway: game.finished === "TRUE" ? 9 : 0,
+            events: []
           };
         });
         
-        console.log("Match data loaded successfully from API");
-        renderMatches();
-        return;
+        console.log(`Loaded ${loadedMatches.length} games for ${todayStr} from API`);
       }
     }
   } catch (error) {
     console.warn("Live API fetch failed. Using pre-configured schedule fallback.", error);
   }
 
-  // Fallback to local table structure
-  // Build real-time state for fallback matches based on the current system time on June 12
-  const now = new Date();
-  
-  matches = LOCAL_SCHEDULE.map(sched => {
-    const kickoff = new Date(sched.kickoff_utc);
-    let time_elapsed = sched.time_elapsed;
-    let finished = sched.finished;
-    let home_score = sched.home_score;
-    let away_score = sched.away_score;
-    let home_scorers = [...sched.home_scorers];
-    let away_scorers = [...sched.away_scorers];
-    let events = [];
+  // Fallback if API returned no matches or failed
+  if (loadedMatches.length === 0) {
+    // 1. Try to find matches in our local schedule
+    const localGames = LOCAL_SCHEDULE.filter(sched => sched.local_date.startsWith(todayStr));
+    
+    if (localGames.length > 0) {
+      loadedMatches = localGames.map(sched => {
+        const kickoffUTC = getKickoffUtc(sched.local_date, sched.stadium_id);
+        const kickoff = new Date(kickoffUTC);
+        let time_elapsed = sched.time_elapsed;
+        let finished = sched.finished;
+        let home_score = sched.home_score;
+        let away_score = sched.away_score;
+        let home_scorers = [...sched.home_scorers];
+        let away_scorers = [...sched.away_scorers];
+        let events = [];
 
-    // Simulate match happening in real-time fallback if system clock overlaps kickoff
-    const diffMs = now - kickoff;
-    const diffMinutes = Math.floor(diffMs / 60000);
+        // Simulate match happening in real-time fallback if system clock overlaps kickoff
+        const diffMs = now - kickoff;
+        const diffMinutes = Math.floor(diffMs / 60000);
 
-    if (diffMinutes >= 0 && diffMinutes < 105) {
-      // Game is happening live!
-      finished = false;
-      time_elapsed = diffMinutes > 45 ? `${Math.min(diffMinutes - 15, 90)}'` : `${diffMinutes}'`;
-      if (diffMinutes > 45 && diffMinutes <= 60) time_elapsed = "HT";
-      
-      // Seed some scores based on elapsed minutes
-      if (sched.id === "3" && diffMinutes > 30) {
-        home_score = 1;
-        home_scorers = ["J. David 28'"];
-        events = [{ time: "28'", desc: "Gol! Jonathan David marca para o Canadá!" }];
-      }
-    } else if (diffMinutes >= 105) {
-      // Game finished
-      finished = true;
-      time_elapsed = "finished";
-      if (sched.id === "3") {
-        home_score = 1;
-        away_score = 1;
-        home_scorers = ["J. David 28'"];
-        away_scorers = ["E. Džeko 77'"];
-        events = [
-          { time: "77'", desc: "Gol! Edin Džeko empata para a Bósnia!" },
-          { time: "28'", desc: "Gol! Jonathan David marca para o Canadá!" }
-        ];
-      }
+        if (diffMinutes >= 0 && diffMinutes < 105) {
+          // Game is happening live!
+          finished = false;
+          time_elapsed = diffMinutes > 45 ? `${Math.min(diffMinutes - 15, 90)}'` : `${diffMinutes}'`;
+          if (diffMinutes > 45 && diffMinutes <= 60) time_elapsed = "HT";
+          
+          if (sched.id === "3" && diffMinutes > 30) {
+            home_score = 1;
+            home_scorers = ["J. David 28'"];
+            events = [{ time: "28'", desc: "Gol! Jonathan David marca para o Canadá!" }];
+          }
+        } else if (diffMinutes >= 105) {
+          // Game finished
+          finished = true;
+          time_elapsed = "finished";
+          if (sched.id === "3") {
+            home_score = 1;
+            away_score = 1;
+            home_scorers = ["J. David 28'"];
+            away_scorers = ["E. Džeko 77'"];
+            events = [
+              { time: "77'", desc: "Gol! Edin Džeko empata para a Bósnia!" },
+              { time: "28'", desc: "Gol! Jonathan David marca para o Canadá!" }
+            ];
+          }
+        }
+
+        return {
+          ...sched,
+          home_score,
+          away_score,
+          home_scorers,
+          away_scorers,
+          finished,
+          time_elapsed,
+          kickoff_utc: kickoffUTC,
+          possession: 50,
+          shotsHome: finished ? 12 : (time_elapsed !== "notstarted" ? 4 : 0),
+          shotsAway: finished ? 10 : (time_elapsed !== "notstarted" ? 3 : 0),
+          foulsHome: finished ? 8 : (time_elapsed !== "notstarted" ? 2 : 0),
+          foulsAway: finished ? 9 : (time_elapsed !== "notstarted" ? 3 : 0),
+          events: events.length > 0 ? events : (sched.id === "2" ? [
+            { time: "80'", desc: "Gol! Oh Hyeon-gyu coloca a Coreia na frente!" },
+            { time: "67'", desc: "Gol! Hwang In-beom empata a partida!" },
+            { time: "59'", desc: "Gol! Ladislav Krejčí abre o placar para a Czechia!" }
+          ] : [])
+        };
+      });
+      console.log(`Loaded ${loadedMatches.length} games for ${todayStr} from Local Schedule`);
+    } else {
+      // 2. Generate random mock games for demo purposes if outside fallback dates
+      loadedMatches = generateMockGamesForDate(todayStr, now);
+      console.log(`Generated ${loadedMatches.length} mock demo games for ${todayStr}`);
     }
+  }
 
-    return {
-      ...sched,
-      home_score,
-      away_score,
-      home_scorers,
-      away_scorers,
-      finished,
-      time_elapsed,
-      possession: 50,
-      shotsHome: finished ? 12 : (time_elapsed !== "notstarted" ? 4 : 0),
-      shotsAway: finished ? 10 : (time_elapsed !== "notstarted" ? 3 : 0),
-      foulsHome: finished ? 8 : (time_elapsed !== "notstarted" ? 2 : 0),
-      foulsAway: finished ? 9 : (time_elapsed !== "notstarted" ? 3 : 0),
-      events: events.length > 0 ? events : (sched.id === "2" ? [
-        { time: "80'", desc: "Gol! Oh Hyeon-gyu coloca a Coreia na frente!" },
-        { time: "67'", desc: "Gol! Hwang In-beom empata a partida!" },
-        { time: "59'", desc: "Gol! Ladislav Krejčí abre o placar para a Czechia!" }
-      ] : [])
-    };
-  });
-
+  matches = loadedMatches;
   renderMatches();
 }
 
