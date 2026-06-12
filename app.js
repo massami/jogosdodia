@@ -621,9 +621,8 @@ function renderMatches() {
       statusClass = "scheduled";
       // Format local kickoff time in user local time (e.g. 16:00 or 22:00)
       const date = new Date(match.kickoff_utc);
-      const hours = String(date.getHours()).padStart(2, '0');
-      const mins = String(date.getMinutes()).padStart(2, '0');
-      statusText = `${hours}:${mins}`;
+      const brTime = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
+      statusText = brTime;
       
       // Display 0 instead of - for scheduled matches
       homeScoreHtml = `<span class="score score-unplayed">0</span>`;
