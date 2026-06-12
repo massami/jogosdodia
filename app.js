@@ -632,36 +632,54 @@ function renderMatches() {
       `;
     }
 
-    card.innerHTML = `
-      <div class="card-header">
-        <span class="group-tag">Grupo ${match.group}</span>
-        <span class="status-badge ${statusClass}">${statusText}</span>
-      </div>
-      <div class="card-body">
-        <div class="team-row">
-          <div class="team-info">
+    if (match.finished) {
+      const homeAbbr = match.home_team_name_en.slice(0, 3).toUpperCase();
+      const awayAbbr = match.away_team_name_en.slice(0, 3).toUpperCase();
+      card.innerHTML = `
+        <div class="card-compact">
+          <span class="group-tag">Grupo ${match.group}</span>
+          <div class="compact-row">
             ${homeFlag}
-            <span class="team-name">${match.home_team_name_en}</span>
-          </div>
-          ${homeScoreHtml}
-        </div>
-        <div class="team-row">
-          <div class="team-info">
+            <span class="compact-abbr">${homeAbbr}</span>
+            <span class="compact-score">${match.home_score} x ${match.away_score}</span>
+            <span class="compact-abbr">${awayAbbr}</span>
             ${awayFlag}
-            <span class="team-name">${match.away_team_name_en}</span>
           </div>
-          ${awayScoreHtml}
+          <span class="status-badge ft">Fim</span>
         </div>
-        ${countdownHtml}
-      </div>
-      <div class="card-details">
-        <div class="details-content">
-          ${scorersHtml}
-          ${statsHtml}
-          ${timelineHtml}
+      `;
+    } else {
+      card.innerHTML = `
+        <div class="card-header">
+          <span class="group-tag">Grupo ${match.group}</span>
+          <span class="status-badge ${statusClass}">${statusText}</span>
         </div>
-      </div>
-    `;
+        <div class="card-body">
+          <div class="team-row">
+            <div class="team-info">
+              ${homeFlag}
+              <span class="team-name">${match.home_team_name_en}</span>
+            </div>
+            ${homeScoreHtml}
+          </div>
+          <div class="team-row">
+            <div class="team-info">
+              ${awayFlag}
+              <span class="team-name">${match.away_team_name_en}</span>
+            </div>
+            ${awayScoreHtml}
+          </div>
+          ${countdownHtml}
+        </div>
+        <div class="card-details">
+          <div class="details-content">
+            ${scorersHtml}
+            ${statsHtml}
+            ${timelineHtml}
+          </div>
+        </div>
+      `;
+    }
 
     // Click handler to toggle card expansion
     card.addEventListener("click", () => {

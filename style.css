@@ -423,6 +423,38 @@ body {
   letter-spacing: 0.5px;
 }
 
+/* Compact finished match card */
+.card-compact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  gap: 6px;
+}
+
+.compact-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: 1;
+  justify-content: center;
+}
+
+.compact-abbr {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.3px;
+}
+
+.compact-score {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  padding: 0 4px;
+}
+
 /* Loading & Empty States */
 .loading-state {
   display: flex;
