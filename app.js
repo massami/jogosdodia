@@ -486,36 +486,6 @@ async function loadMatchData() {
         let away_scorers = [...sched.away_scorers];
         let events = [];
 
-const diffMs = now - kickoff;
-        const diffMinutes = Math.floor(diffMs / 60000);
-
-        if (diffMinutes >= 0 && diffMinutes < 105) {
-          // Game is happening live!
-          finished = false;
-          time_elapsed = diffMinutes > 45 ? `${Math.min(diffMinutes - 15, 90)}'` : `${diffMinutes}'`;
-          if (diffMinutes > 45 && diffMinutes <= 60) time_elapsed = "HT";
-          
-          if (sched.id === "3" && diffMinutes > 30) {
-            home_score = 1;
-            home_scorers = ["J. David 28'"];
-            events = [{ time: "28'", desc: "Gol! Jonathan David marca para o Canadá!" }];
-          }
-        } else if (diffMinutes >= 105) {
-          // Game finished
-          finished = true;
-          time_elapsed = "finished";
-          if (sched.id === "3") {
-            home_score = 1;
-            away_score = 1;
-            home_scorers = ["J. David 28'"];
-            away_scorers = ["E. Džeko 77'"];
-            events = [
-              { time: "77'", desc: "Gol! Edin Džeko empata para a Bósnia!" },
-              { time: "28'", desc: "Gol! Jonathan David marca para o Canadá!" }
-            ];
-          }
-        }
-
         return {
           ...sched,
           home_score,
