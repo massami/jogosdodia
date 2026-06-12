@@ -656,6 +656,25 @@ function renderMatches() {
           </div>
         </div>
       `;
+    } else if (!isLive) {
+      const homeAbbr = match.home_team_name_en.slice(0, 3).toUpperCase();
+      const awayAbbr = match.away_team_name_en.slice(0, 3).toUpperCase();
+      card.innerHTML = `
+        <div class="card-header">
+          <span class="group-tag">Grupo ${match.group}</span>
+          <span class="status-badge scheduled">${statusText}</span>
+        </div>
+        <div class="card-compact">
+          <div class="compact-row">
+            ${homeFlag}
+            <span class="compact-abbr">${homeAbbr}</span>
+            <span class="compact-score compact-score--scheduled">x</span>
+            <span class="compact-abbr">${awayAbbr}</span>
+            ${awayFlag}
+          </div>
+          ${countdownHtml}
+        </div>
+      `;
     } else {
       card.innerHTML = `
         <div class="card-header">
@@ -677,7 +696,6 @@ function renderMatches() {
             </div>
             ${awayScoreHtml}
           </div>
-          ${countdownHtml}
         </div>
         <div class="card-details">
           <div class="details-content">

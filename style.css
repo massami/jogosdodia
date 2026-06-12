@@ -56,7 +56,6 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 4px;
 }
 
 .title-group {
@@ -65,13 +64,18 @@ body {
   gap: 6px;
 }
 
-.widget-header h1 {
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  background: linear-gradient(135deg, #003087 50%, #1e40af 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.fifa-logo {
+  height: 44px;
+  width: auto;
+  display: block;
+  mix-blend-mode: multiply;
 }
 
 .live-pulse-badge {
@@ -98,9 +102,10 @@ body {
 }
 
 .date-bar {
-  font-size: 10px;
+  font-size: 9px;
   color: var(--text-secondary);
   font-weight: 400;
+  text-align: right;
 }
 
 /* Matches List */
@@ -499,6 +504,22 @@ body {
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
   padding: 0 4px;
+}
+
+.compact-score--scheduled {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+.card-compact .countdown-row {
+  margin-top: 4px;
+  padding: 4px 0 0 0;
+  border-top: 1px dashed rgba(0, 48, 135, 0.1);
+  font-size: 9px;
+  color: var(--text-secondary);
+  display: flex;
+  justify-content: space-between;
 }
 
 /* Loading & Empty States */
