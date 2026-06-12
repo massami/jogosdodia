@@ -613,7 +613,7 @@ function renderMatches() {
       awayScoreHtml = `<span class="score">${match.away_score}</span>`;
     } else if (isLive) {
       statusClass = "live";
-      statusText = match.time_elapsed === "HT" ? "Intervalo" : `Ao Vivo ${match.time_elapsed}`;
+      statusText = match.time_elapsed === "HT" ? "Intervalo" : "Ao Vivo";
       homeScoreHtml = `<span class="score">${match.home_score}</span>`;
       awayScoreHtml = `<span class="score">${match.away_score}</span>`;
     } else {
