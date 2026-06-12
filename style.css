@@ -1,17 +1,17 @@
 /* CSS Design System for FIFA World Cup 2026 Widget */
 
 :root {
-  --bg-color: #0b0f19;
-  --panel-bg: rgba(17, 24, 39, 0.75);
-  --border-color: rgba(255, 255, 255, 0.08);
-  --border-color-hover: rgba(56, 189, 248, 0.3);
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --accent-blue: #38bdf8;
-  --accent-green: #22c55e;
-  --accent-red: #ef4444;
-  --accent-yellow: #eab308;
-  --shadow-glow: rgba(56, 189, 248, 0.15);
+  --bg-color: #f1f5f9;
+  --panel-bg: rgba(255, 255, 255, 0.85);
+  --border-color: rgba(0, 48, 135, 0.12);
+  --border-color-hover: rgba(0, 48, 135, 0.4);
+  --text-primary: #0f172a;
+  --text-secondary: #4b6a9b;
+  --accent-blue: #003087;
+  --accent-green: #16a34a;
+  --accent-red: #dc2626;
+  --accent-yellow: #b45309;
+  --shadow-glow: rgba(0, 48, 135, 0.15);
   --font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
@@ -22,7 +22,7 @@
 }
 
 body {
-  background-color: #030712;
+  background-color: #e2e8f0;
   color: var(--text-primary);
   font-family: var(--font-family);
   display: flex;
@@ -37,7 +37,7 @@ body {
   background-color: var(--bg-color);
   border: 1px solid var(--border-color);
   border-radius: 16px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 10px 25px -5px rgba(0, 48, 135, 0.15), 0 8px 10px -6px rgba(0, 48, 135, 0.1);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -49,7 +49,7 @@ body {
 .widget-header {
   padding: 14px 16px;
   border-bottom: 1px solid var(--border-color);
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.4) 0%, rgba(15, 23, 42, 0) 100%);
+  background: linear-gradient(180deg, rgba(0, 48, 135, 0.06) 0%, rgba(0, 48, 135, 0) 100%);
 }
 
 .header-main {
@@ -69,7 +69,7 @@ body {
   font-size: 15px;
   font-weight: 700;
   letter-spacing: 0.5px;
-  background: linear-gradient(135deg, #ffffff 50%, #cbd5e1 100%);
+  background: linear-gradient(135deg, #003087 50%, #1e40af 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -78,7 +78,7 @@ body {
   font-size: 9px;
   font-weight: 700;
   color: var(--accent-green);
-  background: rgba(34, 197, 94, 0.1);
+  background: rgba(22, 163, 74, 0.1);
   padding: 1px 5px;
   border-radius: 4px;
   letter-spacing: 0.5px;
@@ -90,11 +90,11 @@ body {
   font-size: 11px;
   font-weight: 600;
   color: var(--accent-blue);
-  background: rgba(56, 189, 248, 0.08);
+  background: rgba(0, 48, 135, 0.08);
   padding: 2px 6px;
   border-radius: 6px;
   font-variant-numeric: tabular-nums;
-  border: 1px solid rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(0, 48, 135, 0.15);
 }
 
 .date-bar {
@@ -112,7 +112,7 @@ body {
   max-height: 480px;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+  scrollbar-color: rgba(0, 48, 135, 0.2) transparent;
 }
 
 .matches-list::-webkit-scrollbar {
@@ -120,7 +120,7 @@ body {
 }
 
 .matches-list::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(0, 48, 135, 0.2);
   border-radius: 4px;
 }
 
@@ -141,8 +141,8 @@ body {
 }
 
 .match-card.is-live {
-  border-color: rgba(34, 197, 94, 0.3);
-  box-shadow: 0 0 10px rgba(34, 197, 94, 0.08);
+  border-color: rgba(22, 163, 74, 0.35);
+  box-shadow: 0 0 10px rgba(22, 163, 74, 0.1);
 }
 
 .card-header {
@@ -150,8 +150,8 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(255, 255, 255, 0.02);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  background: rgba(0, 48, 135, 0.03);
+  border-bottom: 1px solid rgba(0, 48, 135, 0.06);
 }
 
 .group-tag {
@@ -159,7 +159,7 @@ body {
   font-weight: 700;
   text-transform: uppercase;
   color: var(--text-secondary);
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(0, 48, 135, 0.07);
   padding: 1px 4px;
   border-radius: 3px;
 }
@@ -172,18 +172,18 @@ body {
 }
 
 .status-badge.ft {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 48, 135, 0.06);
   color: var(--text-secondary);
 }
 
 .status-badge.live {
-  background: rgba(34, 197, 94, 0.12);
+  background: rgba(22, 163, 74, 0.12);
   color: var(--accent-green);
   animation: pulse-lite 1.5s infinite ease-in-out;
 }
 
 .status-badge.scheduled {
-  background: rgba(56, 189, 248, 0.08);
+  background: rgba(0, 48, 135, 0.08);
   color: var(--accent-blue);
 }
 
@@ -249,7 +249,7 @@ body {
 .countdown-row {
   margin-top: 4px;
   padding-top: 6px;
-  border-top: 1px dashed rgba(255, 255, 255, 0.04);
+  border-top: 1px dashed rgba(0, 48, 135, 0.1);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -267,8 +267,8 @@ body {
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  background: rgba(0, 0, 0, 0.15);
-  border-top: 1px solid rgba(255, 255, 255, 0.02);
+  background: rgba(0, 48, 135, 0.03);
+  border-top: 1px solid rgba(0, 48, 135, 0.07);
 }
 
 .match-card.is-expanded .card-details {
@@ -290,7 +290,7 @@ body {
   gap: 3px;
   padding: 2px 4px;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.01);
+  background: rgba(0, 48, 135, 0.02);
 }
 
 .scorer-item {
@@ -332,7 +332,7 @@ body {
 
 .stat-bar-container {
   height: 4px;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(0, 48, 135, 0.07);
   border-radius: 2px;
   display: flex;
   overflow: hidden;
@@ -340,7 +340,7 @@ body {
 
 .stat-bar-home {
   height: 100%;
-  background: linear-gradient(90deg, #1d4ed8, var(--accent-blue));
+  background: linear-gradient(90deg, #1e40af, var(--accent-blue));
 }
 
 .stat-bar-away {
@@ -353,7 +353,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  border-top: 1px solid rgba(0, 48, 135, 0.08);
   padding-top: 6px;
 }
 
@@ -399,7 +399,7 @@ body {
 .widget-footer {
   padding: 10px 14px;
   border-top: 1px solid var(--border-color);
-  background: rgba(15, 23, 42, 0.4);
+  background: rgba(0, 48, 135, 0.04);
 }
 
 .control-panel {
@@ -422,7 +422,7 @@ body {
 
 .info-text {
   font-size: 8px;
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(0, 48, 135, 0.4);
   text-align: center;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -449,9 +449,9 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(0, 48, 135, 0.15);
   transition: .2s;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(0, 48, 135, 0.1);
 }
 
 .slider:before {
@@ -496,7 +496,7 @@ input:checked + .slider:before {
 .spinner {
   width: 24px;
   height: 24px;
-  border: 2px solid rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(0, 48, 135, 0.1);
   border-top-color: var(--accent-blue);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -510,11 +510,11 @@ input:checked + .slider:before {
 @keyframes pulse-glow {
   0%, 100% {
     opacity: 0.7;
-    box-shadow: 0 0 4px rgba(34, 197, 94, 0.1);
+    box-shadow: 0 0 4px rgba(22, 163, 74, 0.15);
   }
   50% {
     opacity: 1;
-    box-shadow: 0 0 8px rgba(34, 197, 94, 0.3);
+    box-shadow: 0 0 8px rgba(22, 163, 74, 0.35);
   }
 }
 
@@ -524,6 +524,6 @@ input:checked + .slider:before {
   }
   50% {
     opacity: 1;
-    background: rgba(34, 197, 94, 0.2);
+    background: rgba(22, 163, 74, 0.2);
   }
 }
