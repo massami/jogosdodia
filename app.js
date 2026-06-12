@@ -113,6 +113,25 @@ const FLAG_SVGS = {
   "Angola": `<svg class="flag-icon" viewBox="0 0 3 2"><rect width="3" height="1" fill="#CC0000"/><rect y="1" width="3" height="1" fill="#000"/><circle cx="1.5" cy="1" r="0.2" fill="#FFD100"/></svg>`,
 }
 
+// Known correct kickoff times in UTC, keyed by "HomeTeam|AwayTeam"
+// Use this to override timezone computation errors from the API
+const KICKOFF_UTC = {
+  "Mexico|South Africa":              "2026-06-11T18:00:00Z", // 15:00 BRT
+  "South Korea|Czechia":              "2026-06-12T01:00:00Z", // 22:00 BRT Jun 11
+  "Canada|Bosnia and Herzegovina":    "2026-06-12T20:00:00Z", // 17:00 BRT
+  "United States|Paraguay":           "2026-06-13T01:00:00Z", // 22:00 BRT
+  "Haiti|Scotland":                   "2026-06-14T02:00:00Z", // 23:00 BRT Jun 13
+  "Australia|Turkey":                 "2026-06-14T02:00:00Z", // 23:00 BRT Jun 13
+  "Brazil|Morocco":                   "2026-06-13T23:00:00Z", // 20:00 BRT Jun 13
+  "Qatar|Switzerland":                "2026-06-13T17:00:00Z", // 14:00 BRT
+};
+
+function resolveKickoffUtc(homeTeam, awayTeam, localDateStr, stadiumId) {
+  const key = `${homeTeam}|${awayTeam}`;
+  if (KICKOFF_UTC[key]) return KICKOFF_UTC[key];
+  return getKickoffUtc(localDateStr, stadiumId);
+}
+
 // Helper to compute UTC kickoff time from venue local time and stadium ID
 function getKickoffUtc(localDateStr, stadiumId) {
   const parts = localDateStr.split(" ");
@@ -468,12 +487,14 @@ async function loadMatchData() {
 
       if (apiGames.length > 0) {
         loadedMatches = apiGames.map(game => {
-          const kickoffUTC = getKickoffUtc(game.local_date, game.stadium_id);
+          const homeName = game.home_team_name_en === "Korea Republic" ? "South Korea" : game.home_team_name_en;
+          const awayName = game.away_team_name_en;
+          const kickoffUTC = resolveKickoffUtc(homeName, awayName, game.local_date, game.stadium_id);
           return {
             id: game.id,
             group: game.group,
-            home_team_name_en: game.home_team_name_en === "Korea Republic" ? "South Korea" : game.home_team_name_en,
-            away_team_name_en: game.away_team_name_en === "Turkey" ? "Turkey" : game.away_team_name_en,
+            home_team_name_en: homeName,
+            away_team_name_en: awayName,
             home_score: parseInt(game.home_score) || 0,
             away_score: parseInt(game.away_score) || 0,
             home_scorers: parseScorers(game.home_scorers),
@@ -504,7 +525,7 @@ async function loadMatchData() {
     
     if (localGames.length > 0) {
       loadedMatches = localGames.map(sched => {
-        const kickoffUTC = getKickoffUtc(sched.local_date, sched.stadium_id);
+        const kickoffUTC = resolveKickoffUtc(sched.home_team_name_en, sched.away_team_name_en, sched.local_date, sched.stadium_id);
         const kickoff = new Date(kickoffUTC);
         let time_elapsed = sched.time_elapsed;
         let finished = sched.finished;
