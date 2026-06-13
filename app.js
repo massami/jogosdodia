@@ -1,70 +1,63 @@
 /**
- * FIFA World Cup 2026 Live Matches Widget Engine
- * Powered by football-data.org API v4
- * Handles real-time clock, live scores and match rendering.
+ * Copa do Mundo FIFA 2026 — Widget de Resultados Ao Vivo
+ * Fonte de dados: football-data.org API v4
+ * Todos os horários exibidos em horário de Brasília (BRT).
  */
 
-// Global Match State
+"use strict";
+
+// ─── Configuração ───────────────────────────────────────────────────────────
+const API_URL  = "https://api.football-data.org/v4/competitions/WC/matches";
+const API_KEY  = "89a2622427a146388860dafa13768e32";
+const TIMEZONE = "America/Sao_Paulo";
+const REFRESH_MS = 60000;
+
+// ─── Estado global ──────────────────────────────────────────────────────────
 let matches = [];
-let updateIntervalId = null;
-let clockIntervalId = null;
-let isLoadingMatches = false; // evita chamadas concorrentes de loadMatchData
+let isLoading = false;
+const expandedIds = new Set();
+
+// ─── Códigos de país (FIFA 3 letras) ────────────────────────────────────────
 const TEAM_CODES = {
-  "Afghanistan": "AFG", "Albania": "ALB", "Algeria": "ALG", "Angola": "ANG",
-  "Argentina": "ARG", "Armenia": "ARM", "Australia": "AUS", "Austria": "AUT",
-  "Azerbaijan": "AZE", "Bahrain": "BHR", "Bangladesh": "BAN", "Belgium": "BEL",
-  "Benin": "BEN", "Bolivia": "BOL", "Bosnia and Herzegovina": "BIH",
-  "Botswana": "BOT", "Brazil": "BRA", "Bulgaria": "BUL", "Burkina Faso": "BFA",
-  "Cameroon": "CMR", "Canada": "CAN", "Chile": "CHI", "China": "CHN",
-  "Colombia": "COL", "Congo": "CGO", "Costa Rica": "CRC", "Croatia": "CRO",
-  "Cuba": "CUB", "Czechia": "CZE", "Czech Republic": "CZE", "Denmark": "DEN",
-  "Ecuador": "ECU", "Egypt": "EGY", "El Salvador": "SLV", "England": "ENG",
-  "Estonia": "EST", "Ethiopia": "ETH", "Finland": "FIN", "France": "FRA",
-  "Gabon": "GAB", "Germany": "GER", "Ghana": "GHA", "Greece": "GRE",
-  "Guatemala": "GUA", "Guinea": "GUI", "Haiti": "HAI", "Honduras": "HON",
-  "Hungary": "HUN", "Iceland": "ISL", "India": "IND", "Indonesia": "IDN",
-  "Iran": "IRN", "Iraq": "IRQ", "Ireland": "IRL", "Israel": "ISR",
-  "Italy": "ITA", "Ivory Coast": "CIV", "Jamaica": "JAM", "Japan": "JPN",
-  "Jordan": "JOR", "Kazakhstan": "KAZ", "Kenya": "KEN", "Korea Republic": "KOR",
-  "South Korea": "KOR", "Kuwait": "KUW", "Latvia": "LVA", "Lebanon": "LIB",
-  "Libya": "LBA", "Lithuania": "LTU", "Luxembourg": "LUX", "Malaysia": "MAS",
-  "Mali": "MLI", "Malta": "MLT", "Mexico": "MEX", "Moldova": "MDA",
-  "Morocco": "MAR", "Mozambique": "MOZ", "Namibia": "NAM", "Netherlands": "NED",
-  "New Zealand": "NZL", "Nicaragua": "NCA", "Nigeria": "NGA", "Norway": "NOR",
-  "Oman": "OMA", "Pakistan": "PAK", "Panama": "PAN", "Paraguay": "PAR",
-  "Peru": "PER", "Philippines": "PHI", "Poland": "POL", "Portugal": "POR",
-  "Qatar": "QAT", "Romania": "ROU", "Russia": "RUS", "Saudi Arabia": "KSA",
-  "Scotland": "SCO", "Senegal": "SEN", "Serbia": "SRB", "Slovakia": "SVK",
-  "Slovenia": "SVN", "South Africa": "RSA", "Spain": "ESP", "Sudan": "SDN",
-  "Sweden": "SWE", "Switzerland": "SUI", "Syria": "SYR", "Tanzania": "TAN",
-  "Thailand": "THA", "Togo": "TOG", "Trinidad and Tobago": "TRI",
-  "Tunisia": "TUN", "Turkey": "TUR", "Uganda": "UGA", "Ukraine": "UKR",
-  "United Arab Emirates": "UAE", "United States": "USA", "Uruguay": "URU",
-  "Uzbekistan": "UZB", "Venezuela": "VEN", "Vietnam": "VIE", "Wales": "WAL",
-  "Zambia": "ZAM", "Zimbabwe": "ZIM",
+  "Afghanistan":"AFG","Albania":"ALB","Algeria":"ALG","Angola":"ANG","Argentina":"ARG",
+  "Armenia":"ARM","Australia":"AUS","Austria":"AUT","Azerbaijan":"AZE","Bahrain":"BHR",
+  "Bangladesh":"BAN","Belgium":"BEL","Benin":"BEN","Bolivia":"BOL","Bosnia and Herzegovina":"BIH",
+  "Botswana":"BOT","Brazil":"BRA","Bulgaria":"BUL","Burkina Faso":"BFA","Cameroon":"CMR",
+  "Canada":"CAN","Chile":"CHI","China":"CHN","Colombia":"COL","Congo":"CGO","Costa Rica":"CRC",
+  "Croatia":"CRO","Cuba":"CUB","Czechia":"CZE","Denmark":"DEN","Ecuador":"ECU","Egypt":"EGY",
+  "El Salvador":"SLV","England":"ENG","Estonia":"EST","Ethiopia":"ETH","Finland":"FIN",
+  "France":"FRA","Gabon":"GAB","Germany":"GER","Ghana":"GHA","Greece":"GRE","Guatemala":"GUA",
+  "Guinea":"GUI","Haiti":"HAI","Honduras":"HON","Hungary":"HUN","Iceland":"ISL","India":"IND",
+  "Indonesia":"IDN","Iran":"IRN","Iraq":"IRQ","Ireland":"IRL","Israel":"ISR","Italy":"ITA",
+  "Ivory Coast":"CIV","Jamaica":"JAM","Japan":"JPN","Jordan":"JOR","Kazakhstan":"KAZ",
+  "Kenya":"KEN","South Korea":"KOR","Kuwait":"KUW","Latvia":"LVA","Lebanon":"LIB","Libya":"LBA",
+  "Lithuania":"LTU","Luxembourg":"LUX","Malaysia":"MAS","Mali":"MLI","Malta":"MLT","Mexico":"MEX",
+  "Moldova":"MDA","Morocco":"MAR","Mozambique":"MOZ","Namibia":"NAM","Netherlands":"NED",
+  "New Zealand":"NZL","Nicaragua":"NCA","Nigeria":"NGA","Norway":"NOR","Oman":"OMA","Pakistan":"PAK",
+  "Panama":"PAN","Paraguay":"PAR","Peru":"PER","Philippines":"PHI","Poland":"POL","Portugal":"POR",
+  "Qatar":"QAT","Romania":"ROU","Russia":"RUS","Saudi Arabia":"KSA","Scotland":"SCO","Senegal":"SEN",
+  "Serbia":"SRB","Slovakia":"SVK","Slovenia":"SVN","South Africa":"RSA","Spain":"ESP","Sudan":"SDN",
+  "Sweden":"SWE","Switzerland":"SUI","Syria":"SYR","Tanzania":"TAN","Thailand":"THA","Togo":"TOG",
+  "Trinidad and Tobago":"TRI","Tunisia":"TUN","Turkey":"TUR","Uganda":"UGA","Ukraine":"UKR",
+  "United Arab Emirates":"UAE","United States":"USA","Uruguay":"URU","Uzbekistan":"UZB",
+  "Venezuela":"VEN","Vietnam":"VIE","Wales":"WAL","Zambia":"ZAM","Zimbabwe":"ZIM",
 };
 
-function getTeamCode(name) {
-  return TEAM_CODES[name] || name.slice(0, 3).toUpperCase();
-}
-
-const PHASE_LABELS = {
-  "group": null,
-  "r32":   "Oitavas de Final",
-  "r16":   "Oitavas de Final",
-  "qf":    "Quartas de Final",
-  "sf":    "Semifinal",
-  "third": "3º Lugar",
-  "final": "Final",
+// Normaliza nomes vindos da football-data.org para os nomes usados no widget
+const NAME_MAP = {
+  "Korea Republic":"South Korea","Korea DPR":"North Korea","IR Iran":"Iran",
+  "Côte d'Ivoire":"Ivory Coast","USA":"United States","Türkiye":"Turkey",
+  "DR Congo":"Congo","Czech Republic":"Czechia",
 };
 
-function getPhaseLabel(type, group) {
-  const label = PHASE_LABELS[type];
-  if (label) return label;
-  return group ? `Grupo ${group}` : "Grupo";
-}
+// Rótulos de fase do torneio
+const STAGE_LABELS = {
+  "GROUP_STAGE":null,"LAST_32":"32-avos","LAST_16":"Oitavas de Final",
+  "ROUND_OF_16":"Oitavas de Final","QUARTER_FINALS":"Quartas de Final",
+  "SEMI_FINALS":"Semifinal","THIRD_PLACE":"3º Lugar","FINAL":"Final",
+};
 
-// Team country code mapping for SVGs flags
+// ─── Bandeiras SVG ──────────────────────────────────────────────────────────
 const FLAG_SVGS = {
   // --- CONCACAF ---
   "United States": `<svg class="flag-icon" viewBox="0 0 19 10"><rect width="19" height="10" fill="#B22234"/><rect y="0.77" width="19" height="0.77" fill="#FFF"/><rect y="2.3" width="19" height="0.77" fill="#FFF"/><rect y="3.85" width="19" height="0.77" fill="#FFF"/><rect y="5.38" width="19" height="0.77" fill="#FFF"/><rect y="6.92" width="19" height="0.77" fill="#FFF"/><rect y="8.46" width="19" height="0.77" fill="#FFF"/><rect width="7.6" height="5.38" fill="#3C3B6E"/><circle cx="1.2" cy="0.9" r="0.15" fill="#FFF"/><circle cx="2.5" cy="0.9" r="0.15" fill="#FFF"/><circle cx="3.8" cy="0.9" r="0.15" fill="#FFF"/><circle cx="5.1" cy="0.9" r="0.15" fill="#FFF"/><circle cx="6.4" cy="0.9" r="0.15" fill="#FFF"/><circle cx="1.8" cy="1.8" r="0.15" fill="#FFF"/><circle cx="3.1" cy="1.8" r="0.15" fill="#FFF"/><circle cx="4.4" cy="1.8" r="0.15" fill="#FFF"/><circle cx="5.7" cy="1.8" r="0.15" fill="#FFF"/><circle cx="1.2" cy="2.7" r="0.15" fill="#FFF"/><circle cx="2.5" cy="2.7" r="0.15" fill="#FFF"/><circle cx="3.8" cy="2.7" r="0.15" fill="#FFF"/><circle cx="5.1" cy="2.7" r="0.15" fill="#FFF"/><circle cx="6.4" cy="2.7" r="0.15" fill="#FFF"/><circle cx="1.8" cy="3.6" r="0.15" fill="#FFF"/><circle cx="3.1" cy="3.6" r="0.15" fill="#FFF"/><circle cx="4.4" cy="3.6" r="0.15" fill="#FFF"/><circle cx="5.7" cy="3.6" r="0.15" fill="#FFF"/><circle cx="1.2" cy="4.5" r="0.15" fill="#FFF"/><circle cx="2.5" cy="4.5" r="0.15" fill="#FFF"/><circle cx="3.8" cy="4.5" r="0.15" fill="#FFF"/><circle cx="5.1" cy="4.5" r="0.15" fill="#FFF"/><circle cx="6.4" cy="4.5" r="0.15" fill="#FFF"/></svg>`,
@@ -149,449 +142,265 @@ const FLAG_SVGS = {
   "Angola": `<svg class="flag-icon" viewBox="0 0 3 2"><rect width="3" height="1" fill="#CC0000"/><rect y="1" width="3" height="1" fill="#000"/><circle cx="1.5" cy="1" r="0.2" fill="#FFD100"/></svg>`,
 }
 
-// Central helper: formata qualquer ISO UTC como horário de Brasília (HH:MM)
-function toBRT(kickoffUtc) {
-  return new Date(kickoffUtc).toLocaleTimeString('pt-BR', {
-    hour: '2-digit',
-    minute: '2-digit',
-    timeZone: 'America/Sao_Paulo'
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+// Sigla de 3 letras do país
+function teamCode(name) {
+  return TEAM_CODES[name] || name.slice(0, 3).toUpperCase();
+}
+
+// Normaliza nome do time
+function normalize(name) {
+  return NAME_MAP[name] || name;
+}
+
+// Bandeira SVG (string vazia se não houver)
+function flagSvg(name) {
+  return FLAG_SVGS[name] || "";
+}
+
+// Rótulo da fase (ex: "Grupo C", "Quartas de Final")
+function stageLabel(stage, group) {
+  const label = STAGE_LABELS[stage];
+  if (label) return label;
+  if (group) return `Grupo ${group.replace("GROUP_", "")}`;
+  return "Grupo";
+}
+
+// Formata um instante UTC ISO como horário de Brasília "HH:MM"
+function toBRT(utcDate) {
+  return new Date(utcDate).toLocaleTimeString("pt-BR", {
+    hour: "2-digit", minute: "2-digit", timeZone: TIMEZONE,
   });
 }
 
-// Mapeamento de nomes da football-data.org → nomes usados no widget
-const FD_NAME_MAP = {
-  "Korea Republic":          "South Korea",
-  "Czechia":                 "Czechia",
-  "Bosnia and Herzegovina":  "Bosnia and Herzegovina",
-  "Côte d'Ivoire":          "Ivory Coast",
-  "IR Iran":                 "Iran",
-  "USA":                     "United States",
-  "Türkiye":                 "Turkey",
-  "DR Congo":                "Congo",
-};
-
-function normalizeName(name) {
-  return FD_NAME_MAP[name] || name;
+// Data de hoje em BRT no formato "YYYY-MM-DD"
+function todayISOBrt() {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: TIMEZONE, year: "numeric", month: "2-digit", day: "2-digit",
+  }).format(new Date());
+  return parts; // en-CA já retorna "YYYY-MM-DD"
 }
 
-/**
- * Fetch World Cup matches from football-data.org for today (BRT)
- */
-async function loadMatchData() {
-  if (isLoadingMatches) return;
-  isLoadingMatches = true;
+// Data BRT (dd/mm/yyyy) de um instante UTC
+function dateBRT(utcDate) {
+  return new Date(utcDate).toLocaleDateString("pt-BR", {
+    timeZone: TIMEZONE, day: "2-digit", month: "2-digit", year: "numeric",
+  });
+}
+
+// ─── Busca de dados ─────────────────────────────────────────────────────────
+
+async function loadMatches() {
+  if (isLoading) return;
+  isLoading = true;
+
   try {
-    // Data de hoje em BRT no formato YYYY-MM-DD para a API
-    const now = new Date();
-    const brtDate = new Date(now.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
-    const yyyy = brtDate.getFullYear();
-    const mm   = String(brtDate.getMonth() + 1).padStart(2, "0");
-    const dd   = String(brtDate.getDate()).padStart(2, "0");
-    const dateStr = `${yyyy}-${mm}-${dd}`; // ex: "2026-06-13"
-    const todayBRT = `${String(dd).padStart(2,"0")}/${mm}/${yyyy}`; // "13/06/2026"
+    const today = todayISOBrt();
+    const url = `${API_URL}?dateFrom=${today}&dateTo=${today}`;
+    const res = await fetch(url, { headers: { "X-Auth-Token": API_KEY } });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-    const url = `https://api.football-data.org/v4/competitions/WC/matches?dateFrom=${dateStr}&dateTo=${dateStr}`;
-    const response = await fetch(url, {
-      headers: { "X-Auth-Token": "89a2622427a146388860dafa13768e32" }
-    });
+    const data = await res.json();
+    const todayBR = dateBRT(new Date()); // dd/mm/yyyy de hoje em BRT
 
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const data = await response.json();
+    matches = (data.matches || [])
+      .map(parseMatch)
+      // Garante que só aparecem jogos de hoje em BRT (a API pode trazer de UTC+1)
+      .filter(m => dateBRT(m.kickoff) === todayBR)
+      // Ordena por horário de início
+      .sort((a, b) => new Date(a.kickoff) - new Date(b.kickoff));
 
-    const loadedMatches = (data.matches || []).map(m => {
-      const homeName = normalizeName(m.homeTeam.name);
-      const awayName = normalizeName(m.awayTeam.name);
-
-      const isFinished  = m.status === "FINISHED";
-      const isLive      = m.status === "IN_PLAY" || m.status === "PAUSED";
-      const timeElapsed = isFinished ? "finished"
-                        : isLive     ? (m.minute ? String(m.minute) : "1")
-                        :              "notstarted";
-
-      const homeScore = m.score?.fullTime?.home ?? m.score?.halfTime?.home ?? 0;
-      const awayScore = m.score?.fullTime?.away ?? m.score?.halfTime?.away ?? 0;
-
-      // Goleadores: football-data não fornece na rota /matches — deixamos vazio
-      // (a API retorna na rota /matches/{id} individual, se necessário no futuro)
-      const homeScorers = [];
-      const awayScorers = [];
-
-      // Fase/grupo
-      const group = m.group ? m.group.replace("GROUP_", "") : null;
-      const type  = m.stage === "GROUP_STAGE" ? "group"
-                  : m.stage === "ROUND_OF_32" ? "r32"
-                  : m.stage === "ROUND_OF_16" ? "r16"
-                  : m.stage === "QUARTER_FINALS" ? "qf"
-                  : m.stage === "SEMI_FINALS" ? "sf"
-                  : m.stage === "THIRD_PLACE" ? "third"
-                  : m.stage === "FINAL" ? "final" : "group";
-
-      return {
-        id:                 String(m.id),
-        group,
-        type,
-        home_team_name_en:  homeName,
-        away_team_name_en:  awayName,
-        home_score:         isFinished || isLive ? homeScore : 0,
-        away_score:         isFinished || isLive ? awayScore : 0,
-        home_scorers:       homeScorers,
-        away_scorers:       awayScorers,
-        finished:           isFinished,
-        time_elapsed:       timeElapsed,
-        kickoff_utc:        m.utcDate,  // já é UTC ISO 8601 ✓
-        possession:         50,
-        shotsHome:          0,
-        shotsAway:          0,
-        foulsHome:          0,
-        foulsAway:          0,
-        events:             [],
-      };
-    });
-
-    // Filtra apenas jogos do dia de hoje em BRT (API pode retornar jogos de UTC+1 dia)
-    const todayMatches = loadedMatches.filter(m => {
-      const dateBRT = new Date(m.kickoff_utc).toLocaleDateString("pt-BR", {
-        timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit", year: "numeric"
-      });
-      return dateBRT === todayBRT;
-    });
-
-    matches = todayMatches;
     renderMatches();
-    console.log(`football-data.org: ${todayMatches.length} jogos para ${dateStr} (BRT)`);
-
-  } catch (error) {
-    console.warn("football-data.org indisponível:", error.message);
-    // Fallback: mantém o último estado se já havia dados
-    if (matches.length === 0) renderMatches();
+    console.log(`football-data.org: ${matches.length} jogo(s) para ${today}`);
+  } catch (err) {
+    console.warn("Falha ao buscar dados:", err.message);
+    if (matches.length === 0) renderEmpty("Não foi possível carregar os jogos.");
   } finally {
-    isLoadingMatches = false;
+    isLoading = false;
   }
 }
 
-let expandedCardIds = new Set();
+// Converte um match da API para o formato interno do widget
+function parseMatch(m) {
+  const finished = m.status === "FINISHED";
+  const live     = m.status === "IN_PLAY" || m.status === "PAUSED";
 
-/**
- * Initialize widget and event listeners
- */
-document.addEventListener("DOMContentLoaded", () => {
-  initClock();
-  loadMatchData();
+  return {
+    id:       String(m.id),
+    home:     normalize(m.homeTeam.name || "A definir"),
+    away:     normalize(m.awayTeam.name || "A definir"),
+    homeScore: m.score?.fullTime?.home ?? 0,
+    awayScore: m.score?.fullTime?.away ?? 0,
+    finished,
+    live,
+    minute:   m.minute || null,
+    halfTime: m.status === "PAUSED",
+    kickoff:  m.utcDate,             // UTC ISO 8601 — usado direto
+    stage:    m.stage,
+    group:    m.group,
+  };
+}
 
-  let lastLoadedDate = new Date().toDateString();
+// ─── Renderização ───────────────────────────────────────────────────────────
 
-  // Setup periodic refresh (every 60 seconds)
-  updateIntervalId = setInterval(() => {
-    const currentDate = new Date().toDateString();
-    if (currentDate !== lastLoadedDate) {
-      lastLoadedDate = currentDate;
-      location.reload();
-    } else {
-      loadMatchData();
+const listEl = () => document.getElementById("matches-list");
+
+function renderEmpty(msg) {
+  listEl().innerHTML = `<div class="loading-state"><p>${msg}</p></div>`;
+  document.getElementById("global-live-badge").style.display = "none";
+}
+
+function renderMatches() {
+  const el = listEl();
+
+  if (matches.length === 0) {
+    renderEmpty("Nenhum jogo hoje.");
+    return;
+  }
+
+  el.innerHTML = "";
+  let anyLive = false;
+
+  for (const m of matches) {
+    if (m.live) anyLive = true;
+    el.appendChild(buildCard(m));
+  }
+
+  document.getElementById("global-live-badge").style.display = anyLive ? "inline-block" : "none";
+  updateCountdowns();
+}
+
+function buildCard(m) {
+  const card = document.createElement("div");
+  const nationClass =
+    (m.home === "Brazil" || m.away === "Brazil") ? "card-brazil" :
+    (m.home === "Japan"  || m.away === "Japan")  ? "card-japan"  : "";
+
+  card.className = [
+    "match-card",
+    m.live ? "is-live" : "",
+    m.finished ? "is-finished" : "",
+    expandedIds.has(m.id) ? "is-expanded" : "",
+    nationClass,
+  ].filter(Boolean).join(" ");
+  card.dataset.id = m.id;
+
+  // Badge de status (canto superior direito)
+  let badgeClass, badgeText;
+  if (m.finished) {
+    badgeClass = "ft";
+    badgeText  = `${toBRT(m.kickoff)} · Fim`;
+  } else if (m.live) {
+    badgeClass = "live";
+    badgeText  = m.halfTime ? "Intervalo" : (m.minute ? `${m.minute}'` : "Ao Vivo");
+  } else {
+    badgeClass = "scheduled";
+    badgeText  = toBRT(m.kickoff);
+  }
+
+  const homeAbbr = teamCode(m.home);
+  const awayAbbr = teamCode(m.away);
+  const homeFlag = flagSvg(m.home);
+  const awayFlag = flagSvg(m.away);
+
+  // Placar (ou "x" para jogos agendados)
+  const scoreHtml = (m.finished || m.live)
+    ? `<span class="compact-score">${m.homeScore} x ${m.awayScore}</span>`
+    : `<span class="compact-score compact-score--scheduled">x</span>`;
+
+  // Countdown só para jogos agendados
+  const countdownHtml = (!m.finished && !m.live)
+    ? `<div class="countdown-row" id="cd-${m.id}">
+         <span>Início do jogo</span>
+         <span class="countdown-timer">—</span>
+       </div>`
+    : "";
+
+  card.innerHTML = `
+    <div class="card-header">
+      <span class="group-tag">${stageLabel(m.stage, m.group)}</span>
+      <span class="status-badge ${badgeClass}">${badgeText}</span>
+    </div>
+    <div class="card-compact">
+      <div class="compact-row">
+        ${homeFlag}
+        <span class="compact-abbr">${homeAbbr}</span>
+        ${scoreHtml}
+        <span class="compact-abbr">${awayAbbr}</span>
+        ${awayFlag}
+      </div>
+      ${countdownHtml}
+    </div>
+  `;
+
+  card.addEventListener("click", () => {
+    if (expandedIds.has(m.id)) expandedIds.delete(m.id);
+    else expandedIds.add(m.id);
+    card.classList.toggle("is-expanded");
+  });
+
+  return card;
+}
+
+// ─── Contagem regressiva ────────────────────────────────────────────────────
+
+function updateCountdowns() {
+  for (const m of matches) {
+    if (m.finished || m.live) continue;
+
+    const el = document.querySelector(`#cd-${m.id} .countdown-timer`);
+    if (!el) continue;
+
+    const diff = new Date(m.kickoff) - new Date();
+
+    if (diff <= 0) {
+      el.textContent = "Começando...";
+      continue;
     }
-  }, 60000);
-});
 
-/**
- * Handle Clock and Date header
- */
+    const h = Math.floor(diff / 3600000);
+    const min = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    el.textContent = h > 0 ? `em ${h}h ${min}m` : `em ${min}m ${s}s`;
+  }
+}
+
+// ─── Relógio do cabeçalho ───────────────────────────────────────────────────
+
 function initClock() {
   const clockEl = document.getElementById("live-clock");
-  const dateEl = document.getElementById("current-date");
-
-  // Format header date
-  const dateOptions = { day: 'numeric', month: 'long', year: 'numeric' };
+  const dateEl  = document.getElementById("current-date");
 
   function tick() {
     const now = new Date();
-    let hours = String(now.getHours()).padStart(2, '0');
-    let minutes = String(now.getMinutes()).padStart(2, '0');
-    let seconds = String(now.getSeconds()).padStart(2, '0');
-    clockEl.innerText = `${hours}:${minutes}:${seconds}`;
-
-    // Update date header dynamically
-    dateEl.innerText = now.toLocaleDateString('pt-BR', dateOptions);
-
+    clockEl.textContent = now.toLocaleTimeString("pt-BR", {
+      hour: "2-digit", minute: "2-digit", second: "2-digit", timeZone: TIMEZONE,
+    });
+    dateEl.textContent = now.toLocaleDateString("pt-BR", {
+      day: "numeric", month: "long", year: "numeric", timeZone: TIMEZONE,
+    });
     updateCountdowns();
   }
 
   tick();
-  clockIntervalId = setInterval(tick, 1000);
+  setInterval(tick, 1000);
 }
-function parseScorers(scorersVal) {
-  if (!scorersVal || scorersVal === "null" || scorersVal === "undefined") return [];
-  if (Array.isArray(scorersVal)) return scorersVal;
-  
-  try {
-    // If it's a JSON-like string, parse it
-    if (typeof scorersVal === 'string') {
-      // Normalize quote symbols and parse
-      let clean = scorersVal.replace(/“/g, '"').replace(/”/g, '"');
-      // Sometimes it looks like {"player 10'", "player 20'"} or ["player 10'"]
-      if (clean.startsWith('{') && clean.endsWith('}')) {
-        clean = '[' + clean.slice(1, -1) + ']';
-      }
-      return JSON.parse(clean);
-    }
-  } catch (err) {
-    console.warn("Error parsing scorers string:", scorersVal, err);
-  }
-  
-  // Return clean text lines if JSON parse failed
-  if (typeof scorersVal === 'string') {
-    return scorersVal.split(',').map(s => s.trim().replace(/['"{}]+/g, ''));
-  }
-  return [];
-}
-function renderMatches() {
-  const listEl = document.getElementById("matches-list");
-  listEl.innerHTML = "";
 
-  let anyLive = false;
+// ─── Inicialização ──────────────────────────────────────────────────────────
 
+document.addEventListener("DOMContentLoaded", () => {
+  initClock();
+  loadMatches();
 
-  matches.forEach(match => {
-    const isLive = match.time_elapsed !== "notstarted" && match.time_elapsed !== "finished" && !match.finished;
-    if (isLive) anyLive = true;
-
-    // Create Match Card element
-    const card = document.createElement("div");
-    const isBrazilGame = match.home_team_name_en === "Brazil" || match.away_team_name_en === "Brazil";
-    const isJapanGame = match.home_team_name_en === "Japan" || match.away_team_name_en === "Japan";
-    const nationClass = isBrazilGame ? "card-brazil" : isJapanGame ? "card-japan" : "";
-    card.className = `match-card ${isLive ? 'is-live' : ''} ${match.finished ? 'is-finished' : ''} ${expandedCardIds.has(match.id) ? 'is-expanded' : ''} ${nationClass}`;
-    card.setAttribute("data-id", match.id);
-
-    // Get Flag SVGs
-    const homeFlag = FLAG_SVGS[match.home_team_name_en] || "";
-    const awayFlag = FLAG_SVGS[match.away_team_name_en] || "";
-
-    // Score layout
-    let homeScoreHtml = "";
-    let awayScoreHtml = "";
-    let statusClass = "scheduled";
-    let statusText = "Agendado";
-
-    if (match.finished) {
-      statusClass = "ft";
-      statusText = "Fim";
-      homeScoreHtml = `<span class="score">${match.home_score}</span>`;
-      awayScoreHtml = `<span class="score">${match.away_score}</span>`;
-    } else if (isLive) {
-      statusClass = "live";
-      statusText = match.time_elapsed === "HT" ? "Intervalo" : "Ao Vivo";
-      homeScoreHtml = `<span class="score">${match.home_score}</span>`;
-      awayScoreHtml = `<span class="score">${match.away_score}</span>`;
+  let lastDate = todayISOBrt();
+  setInterval(() => {
+    const today = todayISOBrt();
+    if (today !== lastDate) {
+      lastDate = today;
+      location.reload(); // virou outro dia — recarrega tudo
     } else {
-      // Scheduled — exibe horário de Brasília (BRT)
-      statusClass = "scheduled";
-      statusText = toBRT(match.kickoff_utc);
-      
-      // Display 0 instead of - for scheduled matches
-      homeScoreHtml = `<span class="score score-unplayed">0</span>`;
-      awayScoreHtml = `<span class="score score-unplayed">0</span>`;
+      loadMatches();
     }
-
-    // Build scorers
-    let scorersHtml = "";
-    if (match.home_scorers.length > 0 || match.away_scorers.length > 0) {
-      const homeScorersHtml = match.home_scorers.map(s => `<div class="scorer-item"><span class="soccer-ball">⚽</span> ${s}</div>`).join("");
-      const awayScorersHtml = match.away_scorers.map(s => `<div class="scorer-item" style="justify-content: flex-end;">${s} <span class="soccer-ball">⚽</span></div>`).join("");
-      scorersHtml = `
-        <div class="scorers-list">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <div>${homeScorersHtml}</div>
-            <div style="text-align: right;">${awayScorersHtml}</div>
-          </div>
-        </div>
-      `;
-    }
-
-    // Build stats section
-    const totalShots = match.shotsHome + match.shotsAway || 1;
-    const pctShotsHome = Math.round((match.shotsHome / totalShots) * 100);
-    const pctShotsAway = 100 - pctShotsHome;
-
-    const statsHtml = `
-      <div class="stats-section">
-        <div class="stat-item">
-          <div class="stat-labels">
-            <span>${match.possession}%</span>
-            <span class="stat-name">Posse de Bola</span>
-            <span>${100 - match.possession}%</span>
-          </div>
-          <div class="stat-bar-container">
-            <div class="stat-bar-home" style="width: ${match.possession}%;"></div>
-            <div class="stat-bar-away" style="width: ${100 - match.possession}%;"></div>
-          </div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-labels">
-            <span>${match.shotsHome}</span>
-            <span class="stat-name">Finalizações</span>
-            <span>${match.shotsAway}</span>
-          </div>
-          <div class="stat-bar-container">
-            <div class="stat-bar-home" style="width: ${pctShotsHome}%;"></div>
-            <div class="stat-bar-away" style="width: ${pctShotsAway}%;"></div>
-          </div>
-        </div>
-      </div>
-    `;
-
-    // Build events timeline
-    let timelineHtml = "";
-    if (match.events && match.events.length > 0) {
-      const eventItems = match.events.map(ev => `
-        <div class="ticker-event">
-          <span class="event-time">${ev.time}</span>
-          <span class="event-desc">${ev.desc}</span>
-        </div>
-      `).join("");
-      timelineHtml = `
-        <div class="ticker-section">
-          <div class="ticker-title">Principais Lances</div>
-          <div class="ticker-events">${eventItems}</div>
-        </div>
-      `;
-    }
-
-    // Countdown row for scheduled matches
-    let countdownHtml = "";
-    if (!match.finished && !isLive) {
-      countdownHtml = `
-        <div class="countdown-row" id="countdown-${match.id}">
-          <span>Início do jogo</span>
-          <span class="countdown-timer">Carregando...</span>
-        </div>
-      `;
-    }
-
-    if (match.finished) {
-      const homeAbbr = getTeamCode(match.home_team_name_en);
-      const awayAbbr = getTeamCode(match.away_team_name_en);
-      const brTime = toBRT(match.kickoff_utc);
-      card.innerHTML = `
-        <div class="card-header">
-          <span class="group-tag">${getPhaseLabel(match.type, match.group)}</span>
-          <span class="status-badge ft">${brTime} · Fim</span>
-        </div>
-        <div class="card-compact">
-          <div class="compact-row">
-            ${homeFlag}
-            <span class="compact-abbr">${homeAbbr}</span>
-            <span class="compact-score">${match.home_score} x ${match.away_score}</span>
-            <span class="compact-abbr">${awayAbbr}</span>
-            ${awayFlag}
-          </div>
-        </div>
-      `;
-    } else if (!isLive) {
-      const homeAbbr = getTeamCode(match.home_team_name_en);
-      const awayAbbr = getTeamCode(match.away_team_name_en);
-      card.innerHTML = `
-        <div class="card-header">
-          <span class="group-tag">${getPhaseLabel(match.type, match.group)}</span>
-          <span class="status-badge scheduled">${statusText}</span>
-        </div>
-        <div class="card-compact">
-          <div class="compact-row">
-            ${homeFlag}
-            <span class="compact-abbr">${homeAbbr}</span>
-            <span class="compact-score compact-score--scheduled">x</span>
-            <span class="compact-abbr">${awayAbbr}</span>
-            ${awayFlag}
-          </div>
-          ${countdownHtml}
-        </div>
-      `;
-    } else {
-      card.innerHTML = `
-        <div class="card-header">
-          <span class="group-tag">${getPhaseLabel(match.type, match.group)}</span>
-          <span class="status-badge ${statusClass}">${statusText}</span>
-        </div>
-        <div class="card-body">
-          <div class="team-row">
-            <div class="team-info">
-              ${homeFlag}
-              <span class="team-name">${match.home_team_name_en}</span>
-            </div>
-            ${homeScoreHtml}
-          </div>
-          <div class="team-row">
-            <div class="team-info">
-              ${awayFlag}
-              <span class="team-name">${match.away_team_name_en}</span>
-            </div>
-            ${awayScoreHtml}
-          </div>
-        </div>
-        <div class="card-details">
-          <div class="details-content">
-            ${scorersHtml}
-            ${statsHtml}
-            ${timelineHtml}
-          </div>
-        </div>
-      `;
-    }
-
-    // Click handler to toggle card expansion
-    card.addEventListener("click", () => {
-      if (expandedCardIds.has(match.id)) {
-        expandedCardIds.delete(match.id);
-        card.classList.remove("is-expanded");
-      } else {
-        expandedCardIds.add(match.id);
-        card.classList.add("is-expanded");
-      }
-    });
-
-    listEl.appendChild(card);
-  });
-
-  // Display general global Live badge if any match is live
-  const globalBadge = document.getElementById("global-live-badge");
-  globalBadge.style.display = anyLive ? "inline-block" : "none";
-
-  updateCountdowns();
-}
-
-/**
- * Update countdown clocks for scheduled games
- */
-function updateCountdowns() {
-  matches.forEach(match => {
-    const isLive = match.time_elapsed !== "notstarted" && match.time_elapsed !== "finished" && !match.finished;
-    if (match.finished || isLive) return;
-
-    const countdownEl = document.querySelector(`#countdown-${match.id} .countdown-timer`);
-    if (!countdownEl) return;
-
-    const now = new Date();
-    const kickoff = new Date(match.kickoff_utc);
-    const diffMs = kickoff - now;
-
-    if (diffMs <= 0) {
-      // Só dispara reload se o jogo ainda aparece como notstarted (não duplicar chamadas)
-      if (match.time_elapsed === "notstarted") {
-        countdownEl.innerText = "Autorização iminente";
-        setTimeout(loadMatchData, 2000);
-      }
-    } else {
-      const diffHours = Math.floor(diffMs / 3600000);
-      const diffMins = Math.floor((diffMs % 3600000) / 60000);
-      const diffSecs = Math.floor((diffMs % 60000) / 1000);
-      
-      let timeText = "";
-      if (diffHours > 0) {
-        timeText = `em ${diffHours}h ${diffMins}m`;
-      } else {
-        timeText = `em ${diffMins}m ${diffSecs}s`;
-      }
-      countdownEl.innerText = timeText;
-    }
-  });
-}
-
+  }, REFRESH_MS);
+});
