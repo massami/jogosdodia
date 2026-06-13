@@ -607,56 +607,43 @@ async function loadMatchData() {
     const data = await response.json();
 
     if (data && data.games) {
+      // Log para debug — ver o que a API retorna
+      console.log(`API retornou ${data.games.length} jogos total. todayStr=${todayStr}`);
+      console.log('Amostra API:', data.games.slice(0,3).map(g => ({id:g.id, home:g.home_team_name_en, away:g.away_team_name_en, date:g.local_date})));
+
       const apiGames = data.games.filter(game => {
         return game.local_date && game.local_date.startsWith(todayStr);
       });
 
+      console.log(`Jogos filtrados para hoje (${todayStr}):`, apiGames.length);
+
       // Overlay API data on top of local schedule.
-      // IMPORTANTE: kickoff_utc vem sempre do LOCAL_SCHEDULE (fonte de verdade de horário).
+      // IMPORTANTE: kickoff_utc e id vêm sempre do LOCAL_SCHEDULE (fonte de verdade).
       // A API só contribui com placar, status e eventos ao vivo.
       apiGames.forEach(game => {
         const homeName = game.home_team_name_en === "Korea Republic" ? "South Korea" : game.home_team_name_en;
         const awayName = game.away_team_name_en;
 
-        // Tenta encontrar o jogo no LOCAL_SCHEDULE pelo id ou pelos nomes dos times
-        const localMatch = loadedMatches.find(m => m.id === game.id)
-          || loadedMatches.find(m => m.home_team_name_en === homeName && m.away_team_name_en === awayName);
-
-        // Usa kickoff_utc do LOCAL_SCHEDULE se disponível, senão calcula da API
-        const kickoffUTC = localMatch
-          ? localMatch.kickoff_utc
-          : resolveKickoffUtc(homeName, awayName, game.local_date, game.stadium_id);
-
-        const apiMatch = {
-          id: game.id,
-          group: game.group,
-          home_team_name_en: homeName,
-          away_team_name_en: awayName,
-          home_score: parseInt(game.home_score) || 0,
-          away_score: parseInt(game.away_score) || 0,
-          home_scorers: parseScorers(game.home_scorers),
-          away_scorers: parseScorers(game.away_scorers),
-          finished: game.finished === "TRUE" || game.time_elapsed === "finished",
-          time_elapsed: game.time_elapsed,
-          type: game.type || "group",
-          kickoff_utc: kickoffUTC,
-          possession: 50,
-          shotsHome: 0,
-          shotsAway: 0,
-          foulsHome: 0,
-          foulsAway: 0,
-          events: []
-        };
-        // Substitui o jogo local pelo da API (por id ou por nomes dos times)
-        const idx = loadedMatches.findIndex(m => m.id === game.id)
-          !== -1 ? loadedMatches.findIndex(m => m.id === game.id)
+        // Busca o jogo local por id ou por nomes dos times
+        const localIdx = loadedMatches.findIndex(m => m.id === game.id) !== -1
+          ? loadedMatches.findIndex(m => m.id === game.id)
           : loadedMatches.findIndex(m => m.home_team_name_en === homeName && m.away_team_name_en === awayName);
 
-        if (idx !== -1) {
-          loadedMatches[idx] = apiMatch;
-        } else {
-          loadedMatches.push(apiMatch);
+        if (localIdx !== -1) {
+          // Atualiza apenas placar e status — preserva id e kickoff_utc locais
+          const local = loadedMatches[localIdx];
+          loadedMatches[localIdx] = {
+            ...local,
+            home_score:   parseInt(game.home_score) || 0,
+            away_score:   parseInt(game.away_score) || 0,
+            home_scorers: parseScorers(game.home_scorers),
+            away_scorers: parseScorers(game.away_scorers),
+            finished:     game.finished === "TRUE" || game.time_elapsed === "finished",
+            time_elapsed: game.time_elapsed,
+            type:         game.type || local.type || "group",
+          };
         }
+        // Se não achou no LOCAL_SCHEDULE, ignora — não adiciona duplicatas da API
       });
 
       console.log(`Merged ${apiGames.length} API games with ${localGames.length} local games for ${todayStr}`);
