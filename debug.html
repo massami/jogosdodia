@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Debug — football-data.org</title>
+  <style>
+    body { font-family: monospace; padding: 16px; background:#0f172a; color:#e2e8f0; font-size:13px; line-height:1.5; }
+    h2 { color:#38bdf8; }
+    pre { background:#1e293b; padding:12px; border-radius:8px; overflow-x:auto; white-space:pre-wrap; word-break:break-word; }
+    .ok { color:#4ade80; } .err { color:#f87171; } .warn { color:#fbbf24; }
+    button { background:#38bdf8; color:#0f172a; border:0; padding:8px 16px; border-radius:6px; font-weight:bold; cursor:pointer; margin:4px; }
+  </style>
+</head>
+<body>
+  <h2>Diagnóstico football-data.org</h2>
+  <button onclick="testToday()">Jogos de hoje</button>
+  <button onclick="testAll()">Toda a competição WC</button>
+  <button onclick="testCompetitions()">Competições disponíveis</button>
+  <div id="out"></div>
+
+  <script>
+    const API_KEY = "89a2622427a146388860dafa13768e32";
+    const out = document.getElementById("out");
+    function log(html){ out.innerHTML += html; }
+
+    async function call(url, label) {
+      log(`<h3>${label}</h3><p class="warn">GET ${url}</p>`);
+      try {
+        const res = await fetch(url, { headers: { "X-Auth-Token": API_KEY } });
+        log(`<p class="${res.ok?'ok':'err'}">Status HTTP: ${res.status} ${res.statusText}</p>`);
+        const text = await res.text();
+        let data;
+        try { data = JSON.parse(text); } catch { log(`<pre>${text.slice(0,2000)}</pre>`); return; }
+
+        if (data.matches) {
+          log(`<p class="ok">Total de jogos: ${data.matches.length}</p>`);
+          const sample = data.matches.slice(0,5).map(m => ({
+            id:m.id, utcDate:m.utcDate, status:m.status,
+            home:m.homeTeam?.name, away:m.awayTeam?.name, stage:m.stage, group:m.group
+          }));
+          log(`<pre>${JSON.stringify(sample, null, 2)}</pre>`);
+        } else {
+          log(`<pre>${JSON.stringify(data, null, 2).slice(0,3000)}</pre>`);
+        }
+      } catch (e) {
+        log(`<p class="err">ERRO: ${e.message}</p>`);
+        log(`<p class="warn">Provável bloqueio de CORS — football-data.org não permite requisições direto do navegador.</p>`);
+      }
+    }
+
+    function testToday() {
+      out.innerHTML = "";
+      const today = new Intl.DateTimeFormat("en-CA",{timeZone:"America/Sao_Paulo",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+      call(`https://api.football-data.org/v4/competitions/WC/matches?dateFrom=${today}&dateTo=${today}`, `Jogos de hoje (${today})`);
+    }
+    function testAll() {
+      out.innerHTML = "";
+      call(`https://api.football-data.org/v4/competitions/WC/matches`, "Todos os jogos da WC");
+    }
+    function testCompetitions() {
+      out.innerHTML = "";
+      call(`https://api.football-data.org/v4/competitions`, "Competições disponíveis");
+    }
+  </script>
+</body>
+</html>
