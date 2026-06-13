@@ -581,15 +581,24 @@ async function loadMatchData() {
   if (isLoadingMatches) return; // evita execuções concorrentes
   isLoadingMatches = true;
   try {
-  // Get current system date in MM/DD/YYYY format
+  // Data de hoje em BRT (dd/mm/yyyy) — usada para filtrar jogos do dia
   const now = new Date();
-  const year = now.getFullYear();
+  const todayBRT = now.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo',
+    day: '2-digit', month: '2-digit', year: 'numeric' }); // "13/06/2026"
+  // todayStr no formato MM/DD/YYYY para compatibilidade com local_date da API
+  const year  = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
+  const day   = String(now.getDate()).padStart(2, '0');
   const todayStr = `${month}/${day}/${year}`;
 
-  // Always start with LOCAL_SCHEDULE as the base for today's games
-  const localGames = LOCAL_SCHEDULE.filter(sched => sched.local_date.startsWith(todayStr));
+  // Filtra jogos cujo kickoff_utc corresponde ao dia de HOJE em BRT
+  const localGames = LOCAL_SCHEDULE.filter(sched => {
+    const kickoffUTC = resolveKickoffUtc(sched.home_team_name_en, sched.away_team_name_en, sched.local_date, sched.stadium_id);
+    const dateBRT = new Date(kickoffUTC).toLocaleDateString('pt-BR', {
+      timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric'
+    });
+    return dateBRT === todayBRT;
+  });
   let loadedMatches = localGames.map(sched => {
     const kickoffUTC = resolveKickoffUtc(sched.home_team_name_en, sched.away_team_name_en, sched.local_date, sched.stadium_id);
     return {
