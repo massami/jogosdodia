@@ -7,8 +7,9 @@
 "use strict";
 
 // ─── Configuração ───────────────────────────────────────────────────────────
-const API_URL  = "https://api.football-data.org/v4/competitions/WC/matches";
-const API_KEY  = "89a2622427a146388860dafa13768e32";
+// Requisições passam pelo Cloudflare Worker (proxy CORS).
+// A API key da football-data.org fica protegida no Worker, não aqui.
+const API_URL  = "https://jogosdodia.rmassami.workers.dev/v4/competitions/WC/matches";
 const TIMEZONE = "America/Sao_Paulo";
 const REFRESH_MS = 60000;
 
@@ -198,7 +199,7 @@ async function loadMatches() {
   try {
     const today = todayISOBrt();
     const url = `${API_URL}?dateFrom=${today}&dateTo=${today}`;
-    const res = await fetch(url, { headers: { "X-Auth-Token": API_KEY } });
+    const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     const data = await res.json();

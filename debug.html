@@ -27,7 +27,7 @@
     async function call(url, label) {
       log(`<h3>${label}</h3><p class="warn">GET ${url}</p>`);
       try {
-        const res = await fetch(url, { headers: { "X-Auth-Token": API_KEY } });
+        const res = await fetch(url);
         log(`<p class="${res.ok?'ok':'err'}">Status HTTP: ${res.status} ${res.statusText}</p>`);
         const text = await res.text();
         let data;
@@ -52,15 +52,15 @@
     function testToday() {
       out.innerHTML = "";
       const today = new Intl.DateTimeFormat("en-CA",{timeZone:"America/Sao_Paulo",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
-      call(`https://api.football-data.org/v4/competitions/WC/matches?dateFrom=${today}&dateTo=${today}`, `Jogos de hoje (${today})`);
+      call(`https://jogosdodia.rmassami.workers.dev/v4/competitions/WC/matches?dateFrom=${today}&dateTo=${today}`, `Jogos de hoje (${today})`);
     }
     function testAll() {
       out.innerHTML = "";
-      call(`https://api.football-data.org/v4/competitions/WC/matches`, "Todos os jogos da WC");
+      call(`https://jogosdodia.rmassami.workers.dev/v4/competitions/WC/matches`, "Todos os jogos da WC");
     }
     function testCompetitions() {
       out.innerHTML = "";
-      call(`https://api.football-data.org/v4/competitions`, "Competições disponíveis");
+      call(`https://jogosdodia.rmassami.workers.dev/v4/competitions`, "Competições disponíveis");
     }
   </script>
 </body>
