@@ -657,6 +657,15 @@ async function loadMatchData() {
     console.log(`Generated ${loadedMatches.length} mock demo games for ${todayStr}`);
   }
 
+  // Deduplica por home+away — garante que nunca apareçam dois cartões do mesmo jogo
+  const seen = new Set();
+  loadedMatches = loadedMatches.filter(m => {
+    const key = `${m.home_team_name_en}|${m.away_team_name_en}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
   matches = loadedMatches;
   renderMatches();
 }
