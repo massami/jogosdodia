@@ -1,7 +1,7 @@
 /**
  * FIFA World Cup 2026 Live Matches Widget Engine
- * Handles real-time system clock, live API fetching, local schedule fallback,
- * responsive rendering and match card interactions.
+ * Powered by football-data.org API v4
+ * Handles real-time clock, live scores and match rendering.
  */
 
 // Global Match State
@@ -9,8 +9,6 @@ let matches = [];
 let updateIntervalId = null;
 let clockIntervalId = null;
 let isLoadingMatches = false; // evita chamadas concorrentes de loadMatchData
-
-// Official FIFA 3-letter country codes
 const TEAM_CODES = {
   "Afghanistan": "AFG", "Albania": "ALB", "Algeria": "ALG", "Angola": "ANG",
   "Argentina": "ARG", "Armenia": "ARM", "Australia": "AUS", "Austria": "AUT",
@@ -151,163 +149,6 @@ const FLAG_SVGS = {
   "Angola": `<svg class="flag-icon" viewBox="0 0 3 2"><rect width="3" height="1" fill="#CC0000"/><rect y="1" width="3" height="1" fill="#000"/><circle cx="1.5" cy="1" r="0.2" fill="#FFD100"/></svg>`,
 }
 
-// Known correct kickoff times in UTC, keyed by "HomeTeam|AwayTeam"
-// Use this to override timezone computation errors from the API
-const KICKOFF_UTC = {
-  // Rodada 1
-  "Mexico|South Africa":              "2026-06-11T19:00:00Z", // 16:00 BRT
-  "South Korea|Czechia":              "2026-06-12T02:00:00Z", // 23:00 BRT Jun 11
-  "Canada|Bosnia and Herzegovina":    "2026-06-12T19:00:00Z", // 16:00 BRT
-  "Portugal|Algeria":                 "2026-06-12T22:00:00Z", // 19:00 BRT
-  "Uruguay|Iraq":                     "2026-06-13T01:00:00Z", // 22:00 BRT Jun 12
-  "United States|Paraguay":           "2026-06-13T04:00:00Z", // 01:00 BRT Jun 13
-  "Qatar|Switzerland":                "2026-06-13T19:00:00Z", // 16:00 BRT
-  "Spain|Iceland":                    "2026-06-13T22:00:00Z", // 19:00 BRT
-  "Brazil|Morocco":                   "2026-06-13T22:00:00Z", // 19:00 BRT
-  "Haiti|Scotland":                   "2026-06-14T01:00:00Z", // 22:00 BRT Jun 13
-  "Australia|Turkey":                 "2026-06-14T04:00:00Z", // 01:00 BRT Jun 14
-  "Germany|Saudi Arabia":             "2026-06-14T19:00:00Z", // 16:00 BRT
-  "Argentina|Kenya":                  "2026-06-14T22:00:00Z", // 19:00 BRT
-  "Croatia|China":                    "2026-06-15T01:00:00Z", // 22:00 BRT Jun 14
-  "France|Egypt":                     "2026-06-15T04:00:00Z", // 01:00 BRT Jun 15
-  "Netherlands|Senegal":              "2026-06-15T19:00:00Z", // 16:00 BRT
-  "England|India":                    "2026-06-15T22:00:00Z", // 19:00 BRT
-  "Colombia|Slovenia":                "2026-06-16T01:00:00Z", // 22:00 BRT Jun 15
-  "Italy|Ecuador":                    "2026-06-16T04:00:00Z", // 01:00 BRT Jun 16
-  "New Zealand|Congo":                "2026-06-16T19:00:00Z", // 16:00 BRT
-  "Belgium|Guatemala":                "2026-06-16T22:00:00Z", // 19:00 BRT
-  "Nigeria|Venezuela":                "2026-06-17T01:00:00Z", // 22:00 BRT Jun 16
-  "Japan|Ivory Coast":                "2026-06-17T04:00:00Z", // 01:00 BRT Jun 17
-  "Iran|Panama":                      "2026-06-17T19:00:00Z", // 16:00 BRT
-  "Portugal|Czechia":                 "2026-06-17T22:00:00Z", // 19:00 BRT
-  "Angola|Mexico":                    "2026-06-18T01:00:00Z", // 22:00 BRT Jun 17
-  // Rodada 2
-  "South Africa|South Korea":         "2026-06-18T04:00:00Z", // 01:00 BRT Jun 18
-  "Bosnia and Herzegovina|Qatar":     "2026-06-18T19:00:00Z", // 16:00 BRT
-  "Morocco|Haiti":                    "2026-06-18T22:00:00Z", // 19:00 BRT
-  "Scotland|Brazil":                  "2026-06-19T01:00:00Z", // 22:00 BRT Jun 18
-  "Paraguay|Australia":               "2026-06-19T04:00:00Z", // 01:00 BRT Jun 19
-  "Turkey|United States":             "2026-06-19T19:00:00Z", // 16:00 BRT
-  "Iceland|Germany":                  "2026-06-19T22:00:00Z", // 19:00 BRT
-  "Saudi Arabia|Spain":               "2026-06-20T01:00:00Z", // 22:00 BRT Jun 19
-  "Kenya|Croatia":                    "2026-06-20T04:00:00Z", // 01:00 BRT Jun 20
-  "China|Argentina":                  "2026-06-20T19:00:00Z", // 16:00 BRT
-  "Egypt|Netherlands":                "2026-06-20T22:00:00Z", // 19:00 BRT
-  "Senegal|France":                   "2026-06-21T01:00:00Z", // 22:00 BRT Jun 20
-  "India|Colombia":                   "2026-06-21T04:00:00Z", // 01:00 BRT Jun 21
-  "Slovenia|England":                 "2026-06-21T19:00:00Z", // 16:00 BRT
-  "Ecuador|New Zealand":              "2026-06-21T22:00:00Z", // 19:00 BRT
-  "Congo|Italy":                      "2026-06-22T01:00:00Z", // 22:00 BRT Jun 21
-  "Guatemala|Nigeria":                "2026-06-22T04:00:00Z", // 01:00 BRT Jun 22
-  "Venezuela|Belgium":                "2026-06-22T19:00:00Z", // 16:00 BRT
-  "Ivory Coast|Iran":                 "2026-06-22T22:00:00Z", // 19:00 BRT
-  "Panama|Japan":                     "2026-06-23T01:00:00Z", // 22:00 BRT Jun 22
-  "Czechia|Angola":                   "2026-06-23T04:00:00Z", // 01:00 BRT Jun 23
-  "Mexico|Portugal":                  "2026-06-23T19:00:00Z", // 16:00 BRT
-  // Rodada 3
-  "Mexico|South Korea":               "2026-06-26T04:00:00Z", // 01:00 BRT Jun 26
-  "South Africa|Czechia":             "2026-06-26T04:00:00Z", // 01:00 BRT Jun 26
-  "Canada|Qatar":                     "2026-06-26T22:00:00Z", // 19:00 BRT
-  "Bosnia and Herzegovina|Switzerland":"2026-06-26T22:00:00Z",// 19:00 BRT
-  "Brazil|Haiti":                     "2026-06-27T02:00:00Z", // 23:00 BRT Jun 26
-  "Morocco|Scotland":                 "2026-06-27T02:00:00Z", // 23:00 BRT Jun 26
-  "United States|Australia":          "2026-06-27T22:00:00Z", // 19:00 BRT
-  "Paraguay|Turkey":                  "2026-06-27T22:00:00Z", // 19:00 BRT
-  "Spain|Germany":                    "2026-06-28T02:00:00Z", // 23:00 BRT Jun 27
-  "Iceland|Saudi Arabia":             "2026-06-28T02:00:00Z", // 23:00 BRT Jun 27
-  "Argentina|Croatia":                "2026-06-28T22:00:00Z", // 19:00 BRT
-  "Kenya|China":                      "2026-06-28T22:00:00Z", // 19:00 BRT
-  "France|Netherlands":               "2026-06-29T02:00:00Z", // 23:00 BRT Jun 28
-  "Egypt|Senegal":                    "2026-06-29T02:00:00Z", // 23:00 BRT Jun 28
-  "England|Colombia":                 "2026-06-29T22:00:00Z", // 19:00 BRT
-  "Slovenia|India":                   "2026-06-29T22:00:00Z", // 19:00 BRT
-  "Italy|New Zealand":                "2026-06-30T02:00:00Z", // 23:00 BRT Jun 29
-  "Ecuador|Congo":                    "2026-06-30T02:00:00Z", // 23:00 BRT Jun 29
-  "Belgium|Nigeria":                  "2026-06-30T22:00:00Z", // 19:00 BRT
-  "Venezuela|Guatemala":              "2026-06-30T22:00:00Z", // 19:00 BRT
-  "Japan|Iran":                       "2026-07-01T02:00:00Z", // 23:00 BRT Jun 30
-  "Ivory Coast|Panama":               "2026-07-01T02:00:00Z", // 23:00 BRT Jun 30
-  "Angola|Portugal":                  "2026-07-01T22:00:00Z", // 19:00 BRT
-  "Mexico|Czechia":                   "2026-07-01T22:00:00Z", // 19:00 BRT
-};
-
-function resolveKickoffUtc(homeTeam, awayTeam, localDateStr, stadiumId) {
-  const key = `${homeTeam}|${awayTeam}`;
-  if (KICKOFF_UTC[key]) return KICKOFF_UTC[key];
-  return getKickoffUtc(localDateStr, stadiumId);
-}
-
-// FIFA 2026 stadium timezone map (IANA timezone strings — handles DST automaticamente)
-// EUA:
-//   EDT (UTC-4): MetLife(1), Gillette(2), Lincoln Financial(3), Hard Rock(8), BMO Field(14)
-//   CDT (UTC-5): NRG(9), AT&T(10), CITYPARK(11), Arrowhead(13)
-//   PDT (UTC-7): Levi's(15), SoFi(16)
-// Canadá:
-//   PDT (UTC-7): BC Place(12)
-//   EDT (UTC-4): BMO Field(14)
-// México:
-//   CDT (UTC-5): Azteca(4), BBVA(5), Akron(6), Universitario(7)
-const STADIUM_TIMEZONES = {
-  "1":  "America/New_York",     // MetLife Stadium – East Rutherford, NJ
-  "2":  "America/New_York",     // Gillette Stadium – Foxborough, MA
-  "3":  "America/New_York",     // Lincoln Financial – Philadelphia, PA
-  "4":  "America/Mexico_City",  // Estadio Azteca – Cidade do México
-  "5":  "America/Monterrey",    // Estadio BBVA – Monterrey
-  "6":  "America/Mexico_City",  // Estadio Akron – Guadalajara
-  "7":  "America/Monterrey",    // Estadio Universitario – Monterrey
-  "8":  "America/New_York",     // Hard Rock Stadium – Miami, FL
-  "9":  "America/Chicago",      // NRG Stadium – Houston, TX
-  "10": "America/Chicago",      // AT&T Stadium – Arlington, TX
-  "11": "America/Chicago",      // CITYPARK – St. Louis, MO
-  "12": "America/Vancouver",    // BC Place – Vancouver, BC
-  "13": "America/Chicago",      // Arrowhead Stadium – Kansas City, MO
-  "14": "America/Toronto",      // BMO Field – Toronto, ON
-  "15": "America/Los_Angeles",  // Levi's Stadium – Santa Clara, CA
-  "16": "America/Los_Angeles",  // SoFi Stadium – Inglewood, CA
-};
-
-// Helper to compute UTC kickoff time from venue local time and stadium ID.
-// Uses Intl.DateTimeFormat to resolve the exact UTC offset (DST-safe).
-function getKickoffUtc(localDateStr, stadiumId) {
-  const parts     = localDateStr.split(" ");
-  const dateParts = parts[0].split("/");
-  const timeParts = parts[1].split(":");
-
-  const month   = parseInt(dateParts[0]) - 1;
-  const day     = parseInt(dateParts[1]);
-  const year    = parseInt(dateParts[2]);
-  const hours   = parseInt(timeParts[0]);
-  const minutes = parseInt(timeParts[1]);
-
-  const tz = STADIUM_TIMEZONES[String(stadiumId)] || "America/New_York";
-
-  // Calcula o offset real do fuso no horário alvo via Intl (lida com DST)
-  function wallClockAtUtc(ms) {
-    const fmt = new Intl.DateTimeFormat('en-US', {
-      timeZone: tz,
-      year: 'numeric', month: '2-digit', day: '2-digit',
-      hour: '2-digit', minute: '2-digit', second: '2-digit',
-      hour12: false
-    });
-    const p = {};
-    fmt.formatToParts(new Date(ms)).forEach(pt => {
-      if (pt.type !== 'literal') p[pt.type] = parseInt(pt.value);
-    });
-    return Date.UTC(p.year, p.month - 1, p.day, p.hour === 24 ? 0 : p.hour, p.minute, p.second);
-  }
-
-  // targetWall: o horário local do estádio expresso como ms UTC (ingênuo, sem offset)
-  const targetWall  = Date.UTC(year, month, day, hours, minutes, 0);
-  // Aproximação: offset ≈ wallClock(targetWall) − targetWall
-  const approxOffset = wallClockAtUtc(targetWall) - targetWall;
-  const approxUtc    = targetWall - approxOffset;
-  // Refina com o offset real no UTC aproximado
-  const realOffset   = wallClockAtUtc(approxUtc) - approxUtc;
-  const utcMs        = targetWall - realOffset;
-
-  return new Date(utcMs).toISOString();
-}
-
 // Central helper: formata qualquer ISO UTC como horário de Brasília (HH:MM)
 function toBRT(kickoffUtc) {
   return new Date(kickoffUtc).toLocaleTimeString('pt-BR', {
@@ -317,184 +158,117 @@ function toBRT(kickoffUtc) {
   });
 }
 
-// Tabela completa oficial FIFA 2026 — todos os jogos da fase de grupos (48 jogos)
-// local_date = horário local do estádio; stadium_id → STADIUM_TIMEZONES → BRT
-const LOCAL_SCHEDULE = [
+// Mapeamento de nomes da football-data.org → nomes usados no widget
+const FD_NAME_MAP = {
+  "Korea Republic":          "South Korea",
+  "Czechia":                 "Czechia",
+  "Bosnia and Herzegovina":  "Bosnia and Herzegovina",
+  "Côte d'Ivoire":          "Ivory Coast",
+  "IR Iran":                 "Iran",
+  "USA":                     "United States",
+  "Türkiye":                 "Turkey",
+  "DR Congo":                "Congo",
+};
 
-  // ── RODADA 1 ──────────────────────────────────────────────────────────────
-
-  // Jun 11
-  { id:"1",  group:"A", type:"group", home_team_name_en:"Mexico",                  away_team_name_en:"South Africa",          home_score:2, away_score:0, home_scorers:["J. Quiñones 9'","R. Jiménez 67'"], away_scorers:[], finished:true,  time_elapsed:"finished",    local_date:"06/11/2026 15:00", stadium_id:"1"  },
-  { id:"2",  group:"A", type:"group", home_team_name_en:"South Korea",             away_team_name_en:"Czechia",               home_score:2, away_score:1, home_scorers:["Hwang In-beom 67'","Oh Hyeon-gyu 80'"], away_scorers:["L. Krejčí 59'"], finished:true, time_elapsed:"finished", local_date:"06/11/2026 22:00", stadium_id:"2" },
-  // Jun 12
-  { id:"3",  group:"B", type:"group", home_team_name_en:"Canada",                  away_team_name_en:"Bosnia and Herzegovina",home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/12/2026 12:00", stadium_id:"12" },
-  { id:"4",  group:"B", type:"group", home_team_name_en:"Portugal",                away_team_name_en:"Algeria",               home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/12/2026 15:00", stadium_id:"3"  },
-  { id:"5",  group:"C", type:"group", home_team_name_en:"Uruguay",                 away_team_name_en:"Iraq",                  home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/12/2026 18:00", stadium_id:"4"  },
-  { id:"6",  group:"D", type:"group", home_team_name_en:"United States",           away_team_name_en:"Paraguay",              home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/12/2026 21:00", stadium_id:"16" },
-  // Jun 13
-  { id:"7",  group:"B", type:"group", home_team_name_en:"Qatar",                   away_team_name_en:"Switzerland",           home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/13/2026 12:00", stadium_id:"15" },
-  { id:"8",  group:"E", type:"group", home_team_name_en:"Spain",                   away_team_name_en:"Iceland",               home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/13/2026 15:00", stadium_id:"5"  },
-  { id:"9",  group:"C", type:"group", home_team_name_en:"Brazil",                  away_team_name_en:"Morocco",               home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/13/2026 17:00", stadium_id:"11" },
-  { id:"10", group:"C", type:"group", home_team_name_en:"Haiti",                   away_team_name_en:"Scotland",              home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/13/2026 20:00", stadium_id:"9"  },
-  { id:"11", group:"D", type:"group", home_team_name_en:"Australia",               away_team_name_en:"Turkey",                home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/13/2026 23:00", stadium_id:"13" },
-  // Jun 14
-  { id:"12", group:"E", type:"group", home_team_name_en:"Germany",                 away_team_name_en:"Saudi Arabia",          home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/14/2026 12:00", stadium_id:"6"  },
-  { id:"13", group:"F", type:"group", home_team_name_en:"Argentina",               away_team_name_en:"Kenya",                 home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/14/2026 15:00", stadium_id:"14" },
-  { id:"14", group:"F", type:"group", home_team_name_en:"Croatia",                 away_team_name_en:"China",                 home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/14/2026 18:00", stadium_id:"7"  },
-  { id:"15", group:"G", type:"group", home_team_name_en:"France",                  away_team_name_en:"Egypt",                 home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/14/2026 21:00", stadium_id:"8"  },
-  // Jun 15
-  { id:"16", group:"G", type:"group", home_team_name_en:"Netherlands",             away_team_name_en:"Senegal",               home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/15/2026 12:00", stadium_id:"10" },
-  { id:"17", group:"H", type:"group", home_team_name_en:"England",                 away_team_name_en:"India",                 home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/15/2026 15:00", stadium_id:"1"  },
-  { id:"18", group:"H", type:"group", home_team_name_en:"Colombia",                away_team_name_en:"Slovenia",              home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/15/2026 18:00", stadium_id:"2"  },
-  { id:"19", group:"I", type:"group", home_team_name_en:"Italy",                   away_team_name_en:"Ecuador",               home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/15/2026 21:00", stadium_id:"3"  },
-  // Jun 16
-  { id:"20", group:"I", type:"group", home_team_name_en:"New Zealand",             away_team_name_en:"Congo",                 home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/16/2026 12:00", stadium_id:"4"  },
-  { id:"21", group:"J", type:"group", home_team_name_en:"Belgium",                 away_team_name_en:"Guatemala",             home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/16/2026 15:00", stadium_id:"5"  },
-  { id:"22", group:"J", type:"group", home_team_name_en:"Nigeria",                 away_team_name_en:"Venezuela",             home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/16/2026 18:00", stadium_id:"6"  },
-  { id:"23", group:"K", type:"group", home_team_name_en:"Japan",                   away_team_name_en:"Ivory Coast",           home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/16/2026 21:00", stadium_id:"7"  },
-  // Jun 17
-  { id:"24", group:"K", type:"group", home_team_name_en:"Iran",                    away_team_name_en:"Panama",                home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/17/2026 12:00", stadium_id:"8"  },
-  { id:"25", group:"L", type:"group", home_team_name_en:"Portugal",                away_team_name_en:"Czechia",               home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/17/2026 15:00", stadium_id:"9"  },
-  { id:"26", group:"L", type:"group", home_team_name_en:"Angola",                  away_team_name_en:"Mexico",                home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/17/2026 18:00", stadium_id:"10" },
-
-  // ── RODADA 2 ──────────────────────────────────────────────────────────────
-
-  { id:"27", group:"A", type:"group", home_team_name_en:"South Africa",            away_team_name_en:"South Korea",           home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/17/2026 21:00", stadium_id:"11" },
-  { id:"28", group:"B", type:"group", home_team_name_en:"Bosnia and Herzegovina",  away_team_name_en:"Qatar",                 home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/18/2026 12:00", stadium_id:"12" },
-  { id:"29", group:"C", type:"group", home_team_name_en:"Morocco",                 away_team_name_en:"Haiti",                 home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/18/2026 15:00", stadium_id:"13" },
-  { id:"30", group:"C", type:"group", home_team_name_en:"Scotland",                away_team_name_en:"Brazil",                home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/18/2026 18:00", stadium_id:"14" },
-  { id:"31", group:"D", type:"group", home_team_name_en:"Paraguay",                away_team_name_en:"Australia",             home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/18/2026 21:00", stadium_id:"15" },
-  { id:"32", group:"D", type:"group", home_team_name_en:"Turkey",                  away_team_name_en:"United States",         home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/19/2026 12:00", stadium_id:"16" },
-  { id:"33", group:"E", type:"group", home_team_name_en:"Iceland",                 away_team_name_en:"Germany",               home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/19/2026 15:00", stadium_id:"1"  },
-  { id:"34", group:"E", type:"group", home_team_name_en:"Saudi Arabia",            away_team_name_en:"Spain",                 home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/19/2026 18:00", stadium_id:"2"  },
-  { id:"35", group:"F", type:"group", home_team_name_en:"Kenya",                   away_team_name_en:"Croatia",               home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/19/2026 21:00", stadium_id:"3"  },
-  { id:"36", group:"F", type:"group", home_team_name_en:"China",                   away_team_name_en:"Argentina",             home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/20/2026 12:00", stadium_id:"4"  },
-  { id:"37", group:"G", type:"group", home_team_name_en:"Egypt",                   away_team_name_en:"Netherlands",           home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/20/2026 15:00", stadium_id:"5"  },
-  { id:"38", group:"G", type:"group", home_team_name_en:"Senegal",                 away_team_name_en:"France",                home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/20/2026 18:00", stadium_id:"6"  },
-  { id:"39", group:"H", type:"group", home_team_name_en:"India",                   away_team_name_en:"Colombia",              home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/20/2026 21:00", stadium_id:"7"  },
-  { id:"40", group:"H", type:"group", home_team_name_en:"Slovenia",                away_team_name_en:"England",               home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/21/2026 12:00", stadium_id:"8"  },
-  { id:"41", group:"I", type:"group", home_team_name_en:"Ecuador",                 away_team_name_en:"New Zealand",           home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/21/2026 15:00", stadium_id:"9"  },
-  { id:"42", group:"I", type:"group", home_team_name_en:"Congo",                   away_team_name_en:"Italy",                 home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/21/2026 18:00", stadium_id:"10" },
-  { id:"43", group:"J", type:"group", home_team_name_en:"Guatemala",               away_team_name_en:"Nigeria",               home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/21/2026 21:00", stadium_id:"11" },
-  { id:"44", group:"J", type:"group", home_team_name_en:"Venezuela",               away_team_name_en:"Belgium",               home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/22/2026 12:00", stadium_id:"12" },
-  { id:"45", group:"K", type:"group", home_team_name_en:"Ivory Coast",             away_team_name_en:"Iran",                  home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/22/2026 15:00", stadium_id:"13" },
-  { id:"46", group:"K", type:"group", home_team_name_en:"Panama",                  away_team_name_en:"Japan",                 home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/22/2026 18:00", stadium_id:"14" },
-  { id:"47", group:"L", type:"group", home_team_name_en:"Czechia",                 away_team_name_en:"Angola",                home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/22/2026 21:00", stadium_id:"15" },
-  { id:"48", group:"L", type:"group", home_team_name_en:"Mexico",                  away_team_name_en:"Portugal",              home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/23/2026 12:00", stadium_id:"16" },
-
-  // ── RODADA 3 (simultâneos por grupo) ──────────────────────────────────────
-
-  { id:"49", group:"A", type:"group", home_team_name_en:"Mexico",                  away_team_name_en:"South Korea",           home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/25/2026 21:00", stadium_id:"15" },
-  { id:"50", group:"A", type:"group", home_team_name_en:"South Africa",            away_team_name_en:"Czechia",               home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/25/2026 21:00", stadium_id:"16" },
-  { id:"51", group:"B", type:"group", home_team_name_en:"Canada",                  away_team_name_en:"Qatar",                 home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/26/2026 17:00", stadium_id:"1"  },
-  { id:"52", group:"B", type:"group", home_team_name_en:"Bosnia and Herzegovina",  away_team_name_en:"Switzerland",           home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/26/2026 17:00", stadium_id:"2"  },
-  { id:"53", group:"C", type:"group", home_team_name_en:"Brazil",                  away_team_name_en:"Haiti",                 home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/26/2026 21:00", stadium_id:"3"  },
-  { id:"54", group:"C", type:"group", home_team_name_en:"Morocco",                 away_team_name_en:"Scotland",              home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/26/2026 21:00", stadium_id:"4"  },
-  { id:"55", group:"D", type:"group", home_team_name_en:"United States",           away_team_name_en:"Australia",             home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/27/2026 17:00", stadium_id:"5"  },
-  { id:"56", group:"D", type:"group", home_team_name_en:"Paraguay",                away_team_name_en:"Turkey",                home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/27/2026 17:00", stadium_id:"6"  },
-  { id:"57", group:"E", type:"group", home_team_name_en:"Spain",                   away_team_name_en:"Germany",               home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/27/2026 21:00", stadium_id:"7"  },
-  { id:"58", group:"E", type:"group", home_team_name_en:"Iceland",                 away_team_name_en:"Saudi Arabia",          home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/27/2026 21:00", stadium_id:"8"  },
-  { id:"59", group:"F", type:"group", home_team_name_en:"Argentina",               away_team_name_en:"Croatia",               home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/28/2026 17:00", stadium_id:"9"  },
-  { id:"60", group:"F", type:"group", home_team_name_en:"Kenya",                   away_team_name_en:"China",                 home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/28/2026 17:00", stadium_id:"10" },
-  { id:"61", group:"G", type:"group", home_team_name_en:"France",                  away_team_name_en:"Netherlands",           home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/28/2026 21:00", stadium_id:"11" },
-  { id:"62", group:"G", type:"group", home_team_name_en:"Egypt",                   away_team_name_en:"Senegal",               home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/28/2026 21:00", stadium_id:"12" },
-  { id:"63", group:"H", type:"group", home_team_name_en:"England",                 away_team_name_en:"Colombia",              home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/29/2026 17:00", stadium_id:"13" },
-  { id:"64", group:"H", type:"group", home_team_name_en:"Slovenia",                away_team_name_en:"India",                 home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/29/2026 17:00", stadium_id:"14" },
-  { id:"65", group:"I", type:"group", home_team_name_en:"Italy",                   away_team_name_en:"New Zealand",           home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/29/2026 21:00", stadium_id:"15" },
-  { id:"66", group:"I", type:"group", home_team_name_en:"Ecuador",                 away_team_name_en:"Congo",                 home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/29/2026 21:00", stadium_id:"16" },
-  { id:"67", group:"J", type:"group", home_team_name_en:"Belgium",                 away_team_name_en:"Nigeria",               home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/30/2026 17:00", stadium_id:"1"  },
-  { id:"68", group:"J", type:"group", home_team_name_en:"Venezuela",               away_team_name_en:"Guatemala",             home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/30/2026 17:00", stadium_id:"2"  },
-  { id:"69", group:"K", type:"group", home_team_name_en:"Japan",                   away_team_name_en:"Iran",                  home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/30/2026 21:00", stadium_id:"3"  },
-  { id:"70", group:"K", type:"group", home_team_name_en:"Ivory Coast",             away_team_name_en:"Panama",                home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"06/30/2026 21:00", stadium_id:"4"  },
-  { id:"71", group:"L", type:"group", home_team_name_en:"Angola",                  away_team_name_en:"Portugal",              home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"07/01/2026 17:00", stadium_id:"5"  },
-  { id:"72", group:"L", type:"group", home_team_name_en:"Mexico",                  away_team_name_en:"Czechia",               home_score:0, away_score:0, home_scorers:[], away_scorers:[], finished:false, time_elapsed:"notstarted", local_date:"07/01/2026 17:00", stadium_id:"6"  },
-
-];
-
-// Generate realistic mock games if API is offline and we have no pre-configured schedule for the day
-function generateMockGamesForDate(todayStr, now) {
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const day = now.getDate();
-  
-  const kickoff1 = new Date(year, month, day, 16, 0, 0);
-  const kickoff2 = new Date(year, month, day, 22, 0, 0);
-  
-  const games = [
-    {
-      id: "mock-1",
-      group: "E",
-      home_team_name_en: "Germany",
-      away_team_name_en: "Japan",
-      home_score: 0,
-      away_score: 0,
-      home_scorers: [],
-      away_scorers: [],
-      finished: false,
-      time_elapsed: "notstarted",
-      kickoff_utc: kickoff1.toISOString(),
-      possession: 50,
-      shotsHome: 0,
-      shotsAway: 0,
-      foulsHome: 0,
-      foulsAway: 0,
-      events: []
-    },
-    {
-      id: "mock-2",
-      group: "F",
-      home_team_name_en: "Sweden",
-      away_team_name_en: "Paraguay",
-      home_score: 0,
-      away_score: 0,
-      home_scorers: [],
-      away_scorers: [],
-      finished: false,
-      time_elapsed: "notstarted",
-      kickoff_utc: kickoff2.toISOString(),
-      possession: 50,
-      shotsHome: 0,
-      shotsAway: 0,
-      foulsHome: 0,
-      foulsAway: 0,
-      events: []
-    }
-  ];
-
-  games.forEach(g => {
-    const kickoff = new Date(g.kickoff_utc);
-    const diffMs = now - kickoff;
-    const diffMinutes = Math.floor(diffMs / 60000);
-
-    if (diffMinutes >= 0 && diffMinutes < 105) {
-      g.finished = false;
-      g.time_elapsed = diffMinutes > 45 ? `${Math.min(diffMinutes - 15, 90)}'` : `${diffMinutes}'`;
-      if (diffMinutes > 45 && diffMinutes <= 60) g.time_elapsed = "HT";
-      g.possession = 54;
-      g.shotsHome = Math.floor(diffMinutes / 10);
-      g.shotsAway = Math.floor(diffMinutes / 12);
-    } else if (diffMinutes >= 105) {
-      g.finished = true;
-      g.time_elapsed = "finished";
-      g.home_score = 2;
-      g.away_score = 1;
-      g.home_scorers = ["Scorer A 12'", "Scorer B 76'"];
-      g.away_scorers = ["Scorer C 44'"];
-      g.possession = 52;
-      g.shotsHome = 14;
-      g.shotsAway = 9;
-      g.events = [
-        { time: "76'", desc: "Gol! Alemanha desempata!" },
-        { time: "44'", desc: "Gol! Japão empata a partida!" },
-        { time: "12'", desc: "Gol! Alemanha abre o placar!" }
-      ];
-    }
-  });
-
-  return games;
+function normalizeName(name) {
+  return FD_NAME_MAP[name] || name;
 }
 
-// Map of expanded card IDs to keep track across re-renders
+/**
+ * Fetch World Cup matches from football-data.org for today (BRT)
+ */
+async function loadMatchData() {
+  if (isLoadingMatches) return;
+  isLoadingMatches = true;
+  try {
+    // Data de hoje em BRT no formato YYYY-MM-DD para a API
+    const now = new Date();
+    const brtDate = new Date(now.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
+    const yyyy = brtDate.getFullYear();
+    const mm   = String(brtDate.getMonth() + 1).padStart(2, "0");
+    const dd   = String(brtDate.getDate()).padStart(2, "0");
+    const dateStr = `${yyyy}-${mm}-${dd}`; // ex: "2026-06-13"
+    const todayBRT = `${String(dd).padStart(2,"0")}/${mm}/${yyyy}`; // "13/06/2026"
+
+    const url = `https://api.football-data.org/v4/competitions/WC/matches?dateFrom=${dateStr}&dateTo=${dateStr}`;
+    const response = await fetch(url, {
+      headers: { "X-Auth-Token": "89a2622427a146388860dafa13768e32" }
+    });
+
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+
+    const loadedMatches = (data.matches || []).map(m => {
+      const homeName = normalizeName(m.homeTeam.name);
+      const awayName = normalizeName(m.awayTeam.name);
+
+      const isFinished  = m.status === "FINISHED";
+      const isLive      = m.status === "IN_PLAY" || m.status === "PAUSED";
+      const timeElapsed = isFinished ? "finished"
+                        : isLive     ? (m.minute ? String(m.minute) : "1")
+                        :              "notstarted";
+
+      const homeScore = m.score?.fullTime?.home ?? m.score?.halfTime?.home ?? 0;
+      const awayScore = m.score?.fullTime?.away ?? m.score?.halfTime?.away ?? 0;
+
+      // Goleadores: football-data não fornece na rota /matches — deixamos vazio
+      // (a API retorna na rota /matches/{id} individual, se necessário no futuro)
+      const homeScorers = [];
+      const awayScorers = [];
+
+      // Fase/grupo
+      const group = m.group ? m.group.replace("GROUP_", "") : null;
+      const type  = m.stage === "GROUP_STAGE" ? "group"
+                  : m.stage === "ROUND_OF_32" ? "r32"
+                  : m.stage === "ROUND_OF_16" ? "r16"
+                  : m.stage === "QUARTER_FINALS" ? "qf"
+                  : m.stage === "SEMI_FINALS" ? "sf"
+                  : m.stage === "THIRD_PLACE" ? "third"
+                  : m.stage === "FINAL" ? "final" : "group";
+
+      return {
+        id:                 String(m.id),
+        group,
+        type,
+        home_team_name_en:  homeName,
+        away_team_name_en:  awayName,
+        home_score:         isFinished || isLive ? homeScore : 0,
+        away_score:         isFinished || isLive ? awayScore : 0,
+        home_scorers:       homeScorers,
+        away_scorers:       awayScorers,
+        finished:           isFinished,
+        time_elapsed:       timeElapsed,
+        kickoff_utc:        m.utcDate,  // já é UTC ISO 8601 ✓
+        possession:         50,
+        shotsHome:          0,
+        shotsAway:          0,
+        foulsHome:          0,
+        foulsAway:          0,
+        events:             [],
+      };
+    });
+
+    // Filtra apenas jogos do dia de hoje em BRT (API pode retornar jogos de UTC+1 dia)
+    const todayMatches = loadedMatches.filter(m => {
+      const dateBRT = new Date(m.kickoff_utc).toLocaleDateString("pt-BR", {
+        timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit", year: "numeric"
+      });
+      return dateBRT === todayBRT;
+    });
+
+    matches = todayMatches;
+    renderMatches();
+    console.log(`football-data.org: ${todayMatches.length} jogos para ${dateStr} (BRT)`);
+
+  } catch (error) {
+    console.warn("football-data.org indisponível:", error.message);
+    // Fallback: mantém o último estado se já havia dados
+    if (matches.length === 0) renderMatches();
+  } finally {
+    isLoadingMatches = false;
+  }
+}
+
 let expandedCardIds = new Set();
 
 /**
@@ -544,10 +318,6 @@ function initClock() {
   tick();
   clockIntervalId = setInterval(tick, 1000);
 }
-
-/**
- * Parse scorers array from API (handling formatting variances)
- */
 function parseScorers(scorersVal) {
   if (!scorersVal || scorersVal === "null" || scorersVal === "undefined") return [];
   if (Array.isArray(scorersVal)) return scorersVal;
@@ -573,122 +343,6 @@ function parseScorers(scorersVal) {
   }
   return [];
 }
-
-/**
- * Fetch World Cup Match Data from API with local fallback
- */
-async function loadMatchData() {
-  if (isLoadingMatches) return; // evita execuções concorrentes
-  isLoadingMatches = true;
-  try {
-  // Data de hoje em BRT (dd/mm/yyyy) — usada para filtrar jogos do dia
-  const now = new Date();
-  const todayBRT = now.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo',
-    day: '2-digit', month: '2-digit', year: 'numeric' }); // "13/06/2026"
-  // todayStr no formato MM/DD/YYYY para compatibilidade com local_date da API
-  const year  = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day   = String(now.getDate()).padStart(2, '0');
-  const todayStr = `${month}/${day}/${year}`;
-
-  // Filtra jogos cujo kickoff_utc corresponde ao dia de HOJE em BRT
-  const localGames = LOCAL_SCHEDULE.filter(sched => {
-    const kickoffUTC = resolveKickoffUtc(sched.home_team_name_en, sched.away_team_name_en, sched.local_date, sched.stadium_id);
-    const dateBRT = new Date(kickoffUTC).toLocaleDateString('pt-BR', {
-      timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric'
-    });
-    return dateBRT === todayBRT;
-  });
-  let loadedMatches = localGames.map(sched => {
-    const kickoffUTC = resolveKickoffUtc(sched.home_team_name_en, sched.away_team_name_en, sched.local_date, sched.stadium_id);
-    return {
-      ...sched,
-      kickoff_utc: kickoffUTC,
-      possession: 50,
-      shotsHome: 0,
-      shotsAway: 0,
-      foulsHome: 0,
-      foulsAway: 0,
-      events: []
-    };
-  });
-
-  try {
-    const response = await fetch("https://worldcup26.ir/get/games");
-    if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
-
-    const data = await response.json();
-
-    if (data && data.games) {
-      // Log para debug — ver o que a API retorna
-      console.log(`API retornou ${data.games.length} jogos total. todayStr=${todayStr}`);
-      console.log('Amostra API:', data.games.slice(0,3).map(g => ({id:g.id, home:g.home_team_name_en, away:g.away_team_name_en, date:g.local_date})));
-
-      const apiGames = data.games.filter(game => {
-        return game.local_date && game.local_date.startsWith(todayStr);
-      });
-
-      console.log(`Jogos filtrados para hoje (${todayStr}):`, apiGames.length);
-
-      // Overlay API data on top of local schedule.
-      // IMPORTANTE: kickoff_utc e id vêm sempre do LOCAL_SCHEDULE (fonte de verdade).
-      // A API só contribui com placar, status e eventos ao vivo.
-      apiGames.forEach(game => {
-        const homeName = game.home_team_name_en === "Korea Republic" ? "South Korea" : game.home_team_name_en;
-        const awayName = game.away_team_name_en;
-
-        // Busca o jogo local por id ou por nomes dos times
-        const localIdx = loadedMatches.findIndex(m => m.id === game.id) !== -1
-          ? loadedMatches.findIndex(m => m.id === game.id)
-          : loadedMatches.findIndex(m => m.home_team_name_en === homeName && m.away_team_name_en === awayName);
-
-        if (localIdx !== -1) {
-          // Atualiza apenas placar e status — preserva id e kickoff_utc locais
-          const local = loadedMatches[localIdx];
-          loadedMatches[localIdx] = {
-            ...local,
-            home_score:   parseInt(game.home_score) || 0,
-            away_score:   parseInt(game.away_score) || 0,
-            home_scorers: parseScorers(game.home_scorers),
-            away_scorers: parseScorers(game.away_scorers),
-            finished:     game.finished === "TRUE" || game.time_elapsed === "finished",
-            time_elapsed: game.time_elapsed,
-            type:         game.type || local.type || "group",
-          };
-        }
-        // Se não achou no LOCAL_SCHEDULE, ignora — não adiciona duplicatas da API
-      });
-
-      console.log(`Merged ${apiGames.length} API games with ${localGames.length} local games for ${todayStr}`);
-    }
-  } catch (error) {
-    console.warn("Live API fetch failed. Using pre-configured schedule fallback.", error);
-  }
-
-  if (loadedMatches.length === 0) {
-    loadedMatches = generateMockGamesForDate(todayStr, now);
-    console.log(`Generated ${loadedMatches.length} mock demo games for ${todayStr}`);
-  }
-
-  // Deduplica por home+away — garante que nunca apareçam dois cartões do mesmo jogo
-  const seen = new Set();
-  loadedMatches = loadedMatches.filter(m => {
-    const key = `${m.home_team_name_en}|${m.away_team_name_en}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-
-  matches = loadedMatches;
-  renderMatches();
-  } finally {
-    isLoadingMatches = false;
-  }
-}
-
-/**
- * Render match cards list
- */
 function renderMatches() {
   const listEl = document.getElementById("matches-list");
   listEl.innerHTML = "";
