@@ -611,11 +611,22 @@ async function loadMatchData() {
         return game.local_date && game.local_date.startsWith(todayStr);
       });
 
-      // Overlay API data on top of local schedule (API may omit finished games)
+      // Overlay API data on top of local schedule.
+      // IMPORTANTE: kickoff_utc vem sempre do LOCAL_SCHEDULE (fonte de verdade de horário).
+      // A API só contribui com placar, status e eventos ao vivo.
       apiGames.forEach(game => {
         const homeName = game.home_team_name_en === "Korea Republic" ? "South Korea" : game.home_team_name_en;
         const awayName = game.away_team_name_en;
-        const kickoffUTC = resolveKickoffUtc(homeName, awayName, game.local_date, game.stadium_id);
+
+        // Tenta encontrar o jogo no LOCAL_SCHEDULE pelo id ou pelos nomes dos times
+        const localMatch = loadedMatches.find(m => m.id === game.id)
+          || loadedMatches.find(m => m.home_team_name_en === homeName && m.away_team_name_en === awayName);
+
+        // Usa kickoff_utc do LOCAL_SCHEDULE se disponível, senão calcula da API
+        const kickoffUTC = localMatch
+          ? localMatch.kickoff_utc
+          : resolveKickoffUtc(homeName, awayName, game.local_date, game.stadium_id);
+
         const apiMatch = {
           id: game.id,
           group: game.group,
