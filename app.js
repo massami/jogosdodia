@@ -647,7 +647,11 @@ async function loadMatchData() {
           foulsAway: 0,
           events: []
         };
-        const idx = loadedMatches.findIndex(m => m.id === game.id);
+        // Substitui o jogo local pelo da API (por id ou por nomes dos times)
+        const idx = loadedMatches.findIndex(m => m.id === game.id)
+          !== -1 ? loadedMatches.findIndex(m => m.id === game.id)
+          : loadedMatches.findIndex(m => m.home_team_name_en === homeName && m.away_team_name_en === awayName);
+
         if (idx !== -1) {
           loadedMatches[idx] = apiMatch;
         } else {
