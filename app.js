@@ -160,7 +160,7 @@ const KICKOFF_UTC = {
   "Haiti|Scotland":                   "2026-06-14T01:00:00Z", // 22:00 BRT Jun 13
   "Australia|Turkey":                 "2026-06-14T04:00:00Z", // 01:00 BRT Jun 14
   "Brazil|Morocco":                   "2026-06-13T22:00:00Z", // 19:00 BRT Jun 13
-  "Qatar|Switzerland":                "2026-06-13T17:00:00Z", // 14:00 BRT
+  "Qatar|Switzerland":                "2026-06-13T19:00:00Z", // 16:00 BRT
 };
 
 function resolveKickoffUtc(homeTeam, awayTeam, localDateStr, stadiumId) {
