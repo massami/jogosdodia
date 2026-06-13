@@ -153,13 +153,13 @@ const FLAG_SVGS = {
 // Known correct kickoff times in UTC, keyed by "HomeTeam|AwayTeam"
 // Use this to override timezone computation errors from the API
 const KICKOFF_UTC = {
-  "Mexico|South Africa":              "2026-06-11T18:00:00Z", // 15:00 BRT
-  "South Korea|Czechia":              "2026-06-12T01:00:00Z", // 22:00 BRT Jun 11
+  "Mexico|South Africa":              "2026-06-11T19:00:00Z", // 16:00 BRT
+  "South Korea|Czechia":              "2026-06-12T02:00:00Z", // 23:00 BRT Jun 11
   "Canada|Bosnia and Herzegovina":    "2026-06-12T19:00:00Z", // 16:00 BRT
   "United States|Paraguay":           "2026-06-13T01:00:00Z", // 22:00 BRT
-  "Haiti|Scotland":                   "2026-06-14T02:00:00Z", // 23:00 BRT Jun 13
-  "Australia|Turkey":                 "2026-06-14T02:00:00Z", // 23:00 BRT Jun 13
-  "Brazil|Morocco":                   "2026-06-13T23:00:00Z", // 20:00 BRT Jun 13
+  "Haiti|Scotland":                   "2026-06-14T01:00:00Z", // 22:00 BRT Jun 13
+  "Australia|Turkey":                 "2026-06-14T04:00:00Z", // 01:00 BRT Jun 14
+  "Brazil|Morocco":                   "2026-06-13T22:00:00Z", // 19:00 BRT Jun 13
   "Qatar|Switzerland":                "2026-06-13T17:00:00Z", // 14:00 BRT
 };
 
@@ -169,30 +169,84 @@ function resolveKickoffUtc(homeTeam, awayTeam, localDateStr, stadiumId) {
   return getKickoffUtc(localDateStr, stadiumId);
 }
 
-// Helper to compute UTC kickoff time from venue local time and stadium ID
+// FIFA 2026 stadium timezone map (IANA timezone strings — handles DST automaticamente)
+// EUA:
+//   EDT (UTC-4): MetLife(1), Gillette(2), Lincoln Financial(3), Hard Rock(8), BMO Field(14)
+//   CDT (UTC-5): NRG(9), AT&T(10), CITYPARK(11), Arrowhead(13)
+//   PDT (UTC-7): Levi's(15), SoFi(16)
+// Canadá:
+//   PDT (UTC-7): BC Place(12)
+//   EDT (UTC-4): BMO Field(14)
+// México:
+//   CDT (UTC-5): Azteca(4), BBVA(5), Akron(6), Universitario(7)
+const STADIUM_TIMEZONES = {
+  "1":  "America/New_York",     // MetLife Stadium – East Rutherford, NJ
+  "2":  "America/New_York",     // Gillette Stadium – Foxborough, MA
+  "3":  "America/New_York",     // Lincoln Financial – Philadelphia, PA
+  "4":  "America/Mexico_City",  // Estadio Azteca – Cidade do México
+  "5":  "America/Monterrey",    // Estadio BBVA – Monterrey
+  "6":  "America/Mexico_City",  // Estadio Akron – Guadalajara
+  "7":  "America/Monterrey",    // Estadio Universitario – Monterrey
+  "8":  "America/New_York",     // Hard Rock Stadium – Miami, FL
+  "9":  "America/Chicago",      // NRG Stadium – Houston, TX
+  "10": "America/Chicago",      // AT&T Stadium – Arlington, TX
+  "11": "America/Chicago",      // CITYPARK – St. Louis, MO
+  "12": "America/Vancouver",    // BC Place – Vancouver, BC
+  "13": "America/Chicago",      // Arrowhead Stadium – Kansas City, MO
+  "14": "America/Toronto",      // BMO Field – Toronto, ON
+  "15": "America/Los_Angeles",  // Levi's Stadium – Santa Clara, CA
+  "16": "America/Los_Angeles",  // SoFi Stadium – Inglewood, CA
+};
+
+// Helper to compute UTC kickoff time from venue local time and stadium ID.
+// Uses Intl.DateTimeFormat to resolve the exact UTC offset (DST-safe).
 function getKickoffUtc(localDateStr, stadiumId) {
-  const parts = localDateStr.split(" ");
+  const parts     = localDateStr.split(" ");
   const dateParts = parts[0].split("/");
   const timeParts = parts[1].split(":");
-  
-  const month = parseInt(dateParts[0]) - 1;
-  const day = parseInt(dateParts[1]);
-  const year = parseInt(dateParts[2]);
-  const hours = parseInt(timeParts[0]);
+
+  const month   = parseInt(dateParts[0]) - 1;
+  const day     = parseInt(dateParts[1]);
+  const year    = parseInt(dateParts[2]);
+  const hours   = parseInt(timeParts[0]);
   const minutes = parseInt(timeParts[1]);
-  
-  // Timezone offsets for stadium IDs (CDT vs PDT vs EDT in summer DST)
-  let offset = -4; // Default to EDT (UTC-4)
-  const sId = String(stadiumId);
-  
-  if (["1", "2", "3", "8", "9", "10"].includes(sId)) {
-    offset = -5; // CDT (UTC-5)
-  } else if (["4", "5", "6", "7"].includes(sId)) {
-    offset = -7; // PDT (UTC-7)
+
+  const tz = STADIUM_TIMEZONES[String(stadiumId)] || "America/New_York";
+
+  // Calcula o offset real do fuso no horário alvo via Intl (lida com DST)
+  function wallClockAtUtc(ms) {
+    const fmt = new Intl.DateTimeFormat('en-US', {
+      timeZone: tz,
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+      hour12: false
+    });
+    const p = {};
+    fmt.formatToParts(new Date(ms)).forEach(pt => {
+      if (pt.type !== 'literal') p[pt.type] = parseInt(pt.value);
+    });
+    return Date.UTC(p.year, p.month - 1, p.day, p.hour === 24 ? 0 : p.hour, p.minute, p.second);
   }
-  
-  const utcTimeMs = Date.UTC(year, month, day, hours - offset, minutes);
-  return new Date(utcTimeMs).toISOString();
+
+  // targetWall: o horário local do estádio expresso como ms UTC (ingênuo, sem offset)
+  const targetWall  = Date.UTC(year, month, day, hours, minutes, 0);
+  // Aproximação: offset ≈ wallClock(targetWall) − targetWall
+  const approxOffset = wallClockAtUtc(targetWall) - targetWall;
+  const approxUtc    = targetWall - approxOffset;
+  // Refina com o offset real no UTC aproximado
+  const realOffset   = wallClockAtUtc(approxUtc) - approxUtc;
+  const utcMs        = targetWall - realOffset;
+
+  return new Date(utcMs).toISOString();
+}
+
+// Central helper: formata qualquer ISO UTC como horário de Brasília (HH:MM)
+function toBRT(kickoffUtc) {
+  return new Date(kickoffUtc).toLocaleTimeString('pt-BR', {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'America/Sao_Paulo'
+  });
 }
 
 // Pre-configured matches schedule (fallback / starting state)
@@ -209,7 +263,7 @@ const LOCAL_SCHEDULE = [
     away_scorers: [],
     finished: true,
     time_elapsed: "finished",
-    local_date: "06/11/2026 13:00",
+    local_date: "06/11/2026 15:00",
     stadium_id: "1"
   },
   {
@@ -223,7 +277,7 @@ const LOCAL_SCHEDULE = [
     away_scorers: ["L. Krejčí 59'"],
     finished: true,
     time_elapsed: "finished",
-    local_date: "06/11/2026 20:00",
+    local_date: "06/11/2026 22:00",
     stadium_id: "2"
   },
   // June 12, 2026
@@ -238,7 +292,7 @@ const LOCAL_SCHEDULE = [
     away_scorers: [],
     finished: false,
     time_elapsed: "notstarted",
-    local_date: "06/12/2026 15:00",
+    local_date: "06/12/2026 12:00",
     stadium_id: "12"
   },
   {
@@ -267,7 +321,7 @@ const LOCAL_SCHEDULE = [
     away_scorers: [],
     finished: false,
     time_elapsed: "notstarted",
-    local_date: "06/13/2026 21:00",
+    local_date: "06/13/2026 20:00",
     stadium_id: "9"
   },
   {
@@ -281,7 +335,7 @@ const LOCAL_SCHEDULE = [
     away_scorers: [],
     finished: false,
     time_elapsed: "notstarted",
-    local_date: "06/13/2026 21:00",
+    local_date: "06/13/2026 23:00",
     stadium_id: "13"
   },
   {
@@ -295,7 +349,7 @@ const LOCAL_SCHEDULE = [
     away_scorers: [],
     finished: false,
     time_elapsed: "notstarted",
-    local_date: "06/13/2026 18:00",
+    local_date: "06/13/2026 17:00",
     stadium_id: "11"
   },
   {
@@ -606,12 +660,9 @@ function renderMatches() {
       homeScoreHtml = `<span class="score">${match.home_score}</span>`;
       awayScoreHtml = `<span class="score">${match.away_score}</span>`;
     } else {
-      // Scheduled
+      // Scheduled — exibe horário de Brasília (BRT)
       statusClass = "scheduled";
-      // Format local kickoff time in user local time (e.g. 16:00 or 22:00)
-      const date = new Date(match.kickoff_utc);
-      const brTime = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
-      statusText = brTime;
+      statusText = toBRT(match.kickoff_utc);
       
       // Display 0 instead of - for scheduled matches
       homeScoreHtml = `<span class="score score-unplayed">0</span>`;
@@ -696,8 +747,7 @@ function renderMatches() {
     if (match.finished) {
       const homeAbbr = getTeamCode(match.home_team_name_en);
       const awayAbbr = getTeamCode(match.away_team_name_en);
-      const kickoffDate = new Date(match.kickoff_utc);
-      const brTime = kickoffDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
+      const brTime = toBRT(match.kickoff_utc);
       card.innerHTML = `
         <div class="card-header">
           <span class="group-tag">${getPhaseLabel(match.type, match.group)}</span>
