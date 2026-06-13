@@ -8,6 +8,7 @@
 let matches = [];
 let updateIntervalId = null;
 let clockIntervalId = null;
+let isLoadingMatches = false; // evita chamadas concorrentes de loadMatchData
 
 // Official FIFA 3-letter country codes
 const TEAM_CODES = {
@@ -577,6 +578,9 @@ function parseScorers(scorersVal) {
  * Fetch World Cup Match Data from API with local fallback
  */
 async function loadMatchData() {
+  if (isLoadingMatches) return; // evita execuções concorrentes
+  isLoadingMatches = true;
+  try {
   // Get current system date in MM/DD/YYYY format
   const now = new Date();
   const year = now.getFullYear();
@@ -668,6 +672,9 @@ async function loadMatchData() {
 
   matches = loadedMatches;
   renderMatches();
+  } finally {
+    isLoadingMatches = false;
+  }
 }
 
 /**
@@ -904,9 +911,11 @@ function updateCountdowns() {
     const diffMs = kickoff - now;
 
     if (diffMs <= 0) {
-      countdownEl.innerText = "Autorização iminente";
-      // Trigger a data reload to verify if the match has started on server
-      setTimeout(loadMatchData, 2000);
+      // Só dispara reload se o jogo ainda aparece como notstarted (não duplicar chamadas)
+      if (match.time_elapsed === "notstarted") {
+        countdownEl.innerText = "Autorização iminente";
+        setTimeout(loadMatchData, 2000);
+      }
     } else {
       const diffHours = Math.floor(diffMs / 3600000);
       const diffMins = Math.floor((diffMs % 3600000) / 60000);
